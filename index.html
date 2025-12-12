@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Euclidean Poly-Sequencer — Master Edition</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/midi-writer-js@3.1.1/browser/midiwriter.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="wrap">
+  <div class="panel">
+    
+    <div class="controls">
+      <h3>POLY-SEQUENCER</h3>
+      <div id="status" class="status-msg">Loading Samples...</div>
+      
+      <div id="tracks-container">
+        </div>
+
+      <div class="master-controls">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+           <span style="color:#aaa; font-weight:bold;">MASTER BPM</span>
+           <input id="bpm" type="number" value="120" style="width:60px; background:#111; color:#fff; border:1px solid #444; padding:5px; border-radius:4px;">
+        </div>
+        <div class="buttons-row">
+          <button id="startBtn">START</button>
+          <button id="stopBtn">STOP</button>
+          <button id="exportBtn">MIDI</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="visual">
+      <svg id="mainSvg" viewBox="0 0 600 600">
+        <g id="tracksGroup" transform="translate(300,300)">
+          </g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
