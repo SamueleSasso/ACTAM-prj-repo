@@ -297,81 +297,119 @@ function drawAllCircles() {
 }
 
 /* =================================================================
-   6. POLY-SEQUENCER ENGINE (MCM & CLOCK GLOBALE)
+   6. POLY-SEQUENCER ENGINE (MOTORE BASATO SUL TEMPO REALE)
    ================================================================= */
-let globalStep = 0;
-let globalInterval = null;
+// Variabili per gestire il tempo reale
+let lastFrameTime = 0;
+let currentBarPhase = 0.0; // Da 0.0 (inizio battuta) a 1.0 (fine battuta)
+let animationFrameId = null;
 
-function playLoop() {
+function playLoop(timestamp) {
     if (!isPlaying) return;
 
-    // Calcola la risoluzione globale (MCM)
-    const stepsPerBar = tracks.reduce((acc, t) => lcm(acc, t.steps), 1);
+    // Se è il primo fotogramma, sincronizziamo il tempo
+    if (!lastFrameTime) lastFrameTime = timestamp;
+    
+    // Calcoliamo quanto tempo reale è passato dall'ultimo controllo
+    const deltaTime = timestamp - lastFrameTime;
+    lastFrameTime = timestamp;
 
-    tracks.forEach((track, tIdx) => {
-        const division = stepsPerBar / track.steps;
-        if (globalStep % division === 0) {
-            const stepIdx = (globalStep / division) % track.steps;
-            track.playingIdx = stepIdx;
+    // Recuperiamo i BPM dall'interfaccia
+    const bpm = parseInt(document.getElementById('bpm').value) || 120;
+    
+    // Calcoliamo quanto dura una battuta intera (4 quarti) in millisecondi
+    // Esempio: 120 BPM = 2000ms per battuta
+    const barDurationMs = (60000 / bpm) * 4;
 
-            // Visuals
+    // Avanziamo nella battuta in base al tempo passato
+    // Se deltaTime è 16ms e la battuta è 2000ms, avanziamo dello 0.8%
+    currentBarPhase += deltaTime / barDurationMs;
+
+    // Se siamo arrivati alla fine della battuta (1.0), ricominciamo da capo
+    if (currentBarPhase >= 1.0) {
+        currentBarPhase -= 1.0; 
+        // Resettiamo la memoria delle note suonate per il nuovo giro
+        tracks.forEach(t => t.lastPlayedStep = -1); 
+    }
+
+    // CONTROLLO TRACCE
+    tracks.forEach((track) => {
+        // Calcoliamo matematicamente in quale step dovremmo essere ORA.
+        // Esempio: Se siamo al 50% della battuta (0.5) e la traccia ha 4 step -> Step 2
+        const currentStepIndex = Math.floor(currentBarPhase * track.steps);
+
+        // Se lo step calcolato è diverso dall'ultimo suonato, significa che siamo entrati in uno step nuovo
+        if (currentStepIndex !== track.lastPlayedStep) {
+            
+            // Aggiorniamo la memoria per non suonare questo step 100 volte di fila
+            track.lastPlayedStep = currentStepIndex; 
+            track.playingIdx = currentStepIndex;
+
+            // --- GESTIONE GRAFICA (VISUALS) ---
+            // Spegniamo tutti i pallini
             for(let i = 0; i < track.steps; i++) {
                 const d = document.getElementById(`dot-${track.id}-${i}`);
                 if(d) d.classList.remove('playing');
             }
-            const currentDot = document.getElementById(`dot-${track.id}-${stepIdx}`);
+            // Accendiamo quello corrente
+            const currentDot = document.getElementById(`dot-${track.id}-${currentStepIndex}`);
             if(currentDot) {
                 currentDot.classList.add('playing');
-                if(track.pattern[stepIdx]) {
+                // Effetto "Pulse"
+                if(track.pattern[currentStepIndex]) {
                     currentDot.style.r = 9;
                     setTimeout(() => currentDot.style.r = 6, 80);
                 }
             }
 
-            // Audio Trigger
-            if (track.pattern[stepIdx] === 1) {
+            // --- GESTIONE AUDIO ---
+            if (track.pattern[currentStepIndex] === 1) {
                 if(players.loaded && players.has(track.sample)) {
-                    players.player(track.sample).start();
+                    // Start(0) assicura che il sample riparta dall'inizio
+                    players.player(track.sample).start(0);
                 }
             }
         }
     });
 
-    const bpm = parseInt(document.getElementById('bpm').value) || 120;
-    const barDuration = 4 * 60000 / bpm; // 4 beat
-    const stepDuration = barDuration / stepsPerBar;
-
-    globalStep = (globalStep + 1) % stepsPerBar;
-    globalInterval = setTimeout(playLoop, stepDuration);
-}
-
-// Funzioni per MCM
-function gcd(a, b) {
-    return b === 0 ? a : gcd(b, a % b);
-}
-function lcm(a, b) {
-    return (a * b) / gcd(a, b);
+    // Richiediamo al browser il prossimo controllo appena possibile
+    animationFrameId = requestAnimationFrame(playLoop);
 }
 
 async function startSequencer() {
     if(isPlaying) return;
+    
+    // Avvia l'audio context di Tone.js (fondamentale per i browser moderni)
     await Tone.start();
+    
     isPlaying = true;
     startBtn.style.background = "#222";
     startBtn.style.color = "#888";
-    globalStep = 0;
-    playLoop();
+    
+    // Resettiamo tutte le variabili di tempo
+    lastFrameTime = 0;
+    currentBarPhase = 0.0;
+    tracks.forEach(t => t.lastPlayedStep = -1);
+    
+    // Avviamo il loop
+    animationFrameId = requestAnimationFrame(playLoop);
 }
 
 function stopSequencer() {
     isPlaying = false;
     startBtn.style.background = "#2ecc71";
     startBtn.style.color = "#000";
-    clearTimeout(globalInterval);
-    globalInterval = null;
-    tracks.forEach(track => track.playingIdx = -1);
+    
+    // Cancelliamo il loop
+    if(animationFrameId) cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+    
+    // Pulizia visiva finale
+    tracks.forEach(track => {
+        track.playingIdx = -1;
+        track.lastPlayedStep = -1;
+    });
     document.querySelectorAll('.dot').forEach(d => d.classList.remove('playing'));
-    drawAllCircles(); 
 }
 
 // Bindings
