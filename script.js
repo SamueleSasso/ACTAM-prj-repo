@@ -6,10 +6,10 @@
 const statusEl = document.getElementById('status');
 const startBtn = document.getElementById('startBtn');
 
-// Panner centrale
+// Central panner
 const masterPanner = new Tone.Panner(0).toDestination();
 
-// Lista campioni
+// Samples list
 const samples = {
     kick: "https://tonejs.github.io/audio/drum-samples/CR78/kick.mp3",
     snare: "https://tonejs.github.io/audio/drum-samples/CR78/snare.mp3",
@@ -17,7 +17,7 @@ const samples = {
     tom: "https://tonejs.github.io/audio/drum-samples/CR78/tom1.mp3",
 };
 
-// Creiamo i player
+// We are building the players
 const players = new Tone.Players(samples, {
     onload: () => {
         statusEl.textContent = "AUDIO READY";
@@ -26,7 +26,7 @@ const players = new Tone.Players(samples, {
     }
 }).connect(masterPanner);
 
-// Timeout di sicurezza
+// Security Timeout
 setTimeout(() => {
     if (!players.loaded) {
         statusEl.textContent = "Audio Loading Slow... (Press Start Anyway)";
@@ -38,10 +38,11 @@ setTimeout(() => {
    2. APP STATE
    ================================================================= */
 const tracks = [ 
-  { id: 0, colorVar: '--track-1', radius: 260, steps: 16, pulses: 4, offset: 0, sample: 'kick', pattern: [], playingIdx: -1, timer: null },
-  { id: 1, colorVar: '--track-2', radius: 200, steps: 12, pulses: 5, offset: 0, sample: 'snare', pattern: [], playingIdx: -1, timer: null },
-  { id: 2, colorVar: '--track-3', radius: 140, steps: 8,  pulses: 3, offset: 0, sample: 'hihat', pattern: [], playingIdx: -1, timer: null },
-  { id: 3, colorVar: '--track-4', radius: 80,  steps: 5,  pulses: 2, offset: 0, sample: 'tom',   pattern: [], playingIdx: -1, timer: null }
+  // Aggiunti: eventId (per cancellare lo schedule) e currentStep (contatore interno)
+  { id: 0, colorVar: '--track-1', radius: 260, steps: 16, pulses: 4, offset: 0, sample: 'kick', pattern: [], playingIdx: -1, eventId: null, currentStep: 0 },
+  { id: 1, colorVar: '--track-2', radius: 200, steps: 12, pulses: 5, offset: 0, sample: 'snare', pattern: [], playingIdx: -1, eventId: null, currentStep: 0 },
+  { id: 2, colorVar: '--track-3', radius: 140, steps: 8,  pulses: 3, offset: 0, sample: 'hihat', pattern: [], playingIdx: -1, eventId: null, currentStep: 0 },
+  { id: 3, colorVar: '--track-4', radius: 80,  steps: 5,  pulses: 2, offset: 0, sample: 'tom',   pattern: [], playingIdx: -1, eventId: null, currentStep: 0 }
 ];
 
 let isPlaying = false;
@@ -190,6 +191,10 @@ function initInterface() {
         pulsesK.updateLimits(0, track.steps);
         offsetK.updateLimits(0, track.steps - 1);
         regenerateTrack(track);
+
+        // --- AGGIUNTA IMPORTANTE ---
+        // Se stiamo suonando, aggiorniamo il motore audio in tempo reale
+        if(isPlaying) updateTrackScheduler(track);
     });
 
     const pulsesK = new Knob(knobsRow, 'PULSES', 0, track.steps, track.pulses, track.colorVar, (v) => {
@@ -207,9 +212,9 @@ function initInterface() {
   });
 }
 
-/* =================================================================
+/* ====================================
    5. MATH & DRAW
-   ================================================================= */
+   ==================================== */
 function generateEuclideanPattern(steps, pulses) {
     if (pulses >= steps) return Array(steps).fill(1);
     if (pulses <= 0) return Array(steps).fill(0);
@@ -297,117 +302,115 @@ function drawAllCircles() {
 }
 
 /* =================================================================
-   6. POLY-SEQUENCER ENGINE (MOTORE BASATO SUL TEMPO REALE)
+   6. POLY-SEQUENCER ENGINE (TONE.TRANSPORT EVENT BASED)
    ================================================================= */
-// Variabili per gestire il tempo reale
-let lastFrameTime = 0;
-let currentBarPhase = 0.0; // Da 0.0 (inizio battuta) a 1.0 (fine battuta)
-let animationFrameId = null;
 
-function playLoop(timestamp) {
-    if (!isPlaying) return;
-
-    // Se è il primo fotogramma, sincronizziamo il tempo
-    if (!lastFrameTime) lastFrameTime = timestamp;
-    
-    // Calcoliamo quanto tempo reale è passato dall'ultimo controllo
-    const deltaTime = timestamp - lastFrameTime;
-    lastFrameTime = timestamp;
-
-    // Recuperiamo i BPM dall'interfaccia
-    const bpm = parseInt(document.getElementById('bpm').value) || 120;
-    
-    // Calcoliamo quanto dura una battuta intera (4 quarti) in millisecondi
-    // Esempio: 120 BPM = 2000ms per battuta
-    const barDurationMs = (60000 / bpm) * 4;
-
-    // Avanziamo nella battuta in base al tempo passato
-    // Se deltaTime è 16ms e la battuta è 2000ms, avanziamo dello 0.8%
-    currentBarPhase += deltaTime / barDurationMs;
-
-    // Se siamo arrivati alla fine della battuta (1.0), ricominciamo da capo
-    if (currentBarPhase >= 1.0) {
-        currentBarPhase -= 1.0; 
-        // Resettiamo la memoria delle note suonate per il nuovo giro
-        tracks.forEach(t => t.lastPlayedStep = -1); 
+// Funzione Core: Schedula (o ri-schedula) una singola traccia
+function updateTrackScheduler(track) {
+    // 1. Pulizia: Se c'era già un loop programmato per questa traccia, cancellalo.
+    // Questo è fondamentale quando giri la manopola Steps mentre suona.
+    if (track.eventId !== null) {
+        Tone.Transport.clear(track.eventId);
+        track.eventId = null;
     }
 
-    // CONTROLLO TRACCE
-    tracks.forEach((track) => {
-        // Calcoliamo matematicamente in quale step dovremmo essere ORA.
-        // Esempio: Se siamo al 50% della battuta (0.5) e la traccia ha 4 step -> Step 2
-        const currentStepIndex = Math.floor(currentBarPhase * track.steps);
+    // Se il sequencer è fermo, non scheduliamo nulla (lo farà startSequencer)
+    // Ma se stiamo suonando e cambiamo manopola, dobbiamo rischedulare al volo.
+    // Per semplicità, qui configuriamo solo l'evento, Tone lo gestirà se Transport è 'started'.
+    
+    // 2. Calcolo Intervallo Matematico
+    // "1m" indica 1 misura (4 quarti). Dividiamo per il numero di step.
+    // Tone.Time("1m").toSeconds() ci dà la durata in secondi a BPM attuali, diviso gli step.
+    // Usiamo una funzione callback per ricalcolarlo dinamicamente se i BPM cambiano? 
+    // No, meglio passare un valore tempo relativo.
+    // Tone.js supporta la stringa "1m / 16" ma per sicurezza usiamo i secondi relativi.
+    
+    const interval = Tone.Time("1m").toSeconds() / track.steps;
 
-        // Se lo step calcolato è diverso dall'ultimo suonato, significa che siamo entrati in uno step nuovo
-        if (currentStepIndex !== track.lastPlayedStep) {
-            
-            // Aggiorniamo la memoria per non suonare questo step 100 volte di fila
-            track.lastPlayedStep = currentStepIndex; 
-            track.playingIdx = currentStepIndex;
+    // 3. Creazione Loop
+    // scheduleRepeat esegue la callback ogni 'interval' secondi esatti.
+    track.eventId = Tone.Transport.scheduleRepeat((time) => {
+        // A. Logica Step: Avanziamo di 1
+        track.currentStep = (track.currentStep + 1) % track.steps;
+        track.playingIdx = track.currentStep;
 
-            // --- GESTIONE GRAFICA (VISUALS) ---
-            // Spegniamo tutti i pallini
+        // B. Audio: Usiamo 'time' per la precisione assoluta (zero jitter)
+        const stepIdx = track.currentStep;
+        if (track.pattern[stepIdx] === 1) {
+            if (players.loaded && players.has(track.sample)) {
+                players.player(track.sample).start(time);
+            }
+        }
+
+        // C. Visuals: Tone.Draw sincronizza la UI con l'audio (che è leggermente nel futuro)
+        Tone.Draw.schedule(() => {
+            // Spegni precedenti
             for(let i = 0; i < track.steps; i++) {
                 const d = document.getElementById(`dot-${track.id}-${i}`);
                 if(d) d.classList.remove('playing');
             }
-            // Accendiamo quello corrente
-            const currentDot = document.getElementById(`dot-${track.id}-${currentStepIndex}`);
+            // Accendi corrente
+            const currentDot = document.getElementById(`dot-${track.id}-${stepIdx}`);
             if(currentDot) {
                 currentDot.classList.add('playing');
-                // Effetto "Pulse"
-                if(track.pattern[currentStepIndex]) {
+                if(track.pattern[stepIdx]) {
                     currentDot.style.r = 9;
                     setTimeout(() => currentDot.style.r = 6, 80);
                 }
             }
+        }, time);
 
-            // --- GESTIONE AUDIO ---
-            if (track.pattern[currentStepIndex] === 1) {
-                if(players.loaded && players.has(track.sample)) {
-                    // Start(0) assicura che il sample riparta dall'inizio
-                    players.player(track.sample).start(0);
-                }
-            }
-        }
-    });
-
-    // Richiediamo al browser il prossimo controllo appena possibile
-    animationFrameId = requestAnimationFrame(playLoop);
+    }, interval);
 }
+
+// Funzione BPM Listener
+const bpmInput = document.getElementById('bpm');
+bpmInput.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value) || 120;
+    Tone.Transport.bpm.value = val;
+    // Quando cambiano i BPM, bisogna rischedulare perché l'intervallo in secondi cambia?
+    // Tone.Transport scala automaticamente se usiamo notazione musicale, 
+    // ma qui abbiamo calcolato in secondi fissi all'istante della creazione.
+    // Per robustezza, rigeneriamo gli scheduler al cambio BPM o Steps.
+    if(isPlaying) tracks.forEach(t => updateTrackScheduler(t));
+});
 
 async function startSequencer() {
     if(isPlaying) return;
+    await Tone.start(); // Necessario per browser policy
     
-    // Avvia l'audio context di Tone.js (fondamentale per i browser moderni)
-    await Tone.start();
+    // Reset stato
+    tracks.forEach(t => {
+        t.currentStep = -1; 
+        // Generiamo lo scheduler per ogni traccia
+        updateTrackScheduler(t);
+    });
+
+    // Imposta BPM iniziali
+    Tone.Transport.bpm.value = parseInt(bpmInput.value) || 120;
     
+    // START
+    Tone.Transport.start();
     isPlaying = true;
+    
     startBtn.style.background = "#222";
     startBtn.style.color = "#888";
-    
-    // Resettiamo tutte le variabili di tempo
-    lastFrameTime = 0;
-    currentBarPhase = 0.0;
-    tracks.forEach(t => t.lastPlayedStep = -1);
-    
-    // Avviamo il loop
-    animationFrameId = requestAnimationFrame(playLoop);
 }
 
 function stopSequencer() {
+    // STOP
+    Tone.Transport.stop();
+    // Cancelliamo tutti gli eventi schedulati per pulizia
+    Tone.Transport.cancel();
+    tracks.forEach(t => t.eventId = null);
+    
     isPlaying = false;
     startBtn.style.background = "#2ecc71";
     startBtn.style.color = "#000";
     
-    // Cancelliamo il loop
-    if(animationFrameId) cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-    
-    // Pulizia visiva finale
+    // Reset Visuals
     tracks.forEach(track => {
         track.playingIdx = -1;
-        track.lastPlayedStep = -1;
     });
     document.querySelectorAll('.dot').forEach(d => d.classList.remove('playing'));
 }
@@ -418,21 +421,21 @@ document.getElementById('stopBtn').onclick = stopSequencer;
 
 
 
-/* =================================================================
-   7. MIDI EXPORT ENGINE (ENGINEERING GRADE v2.0)
-   ================================================================= */
+/* ===========================
+   7. MIDI EXPORT ENGINE
+   ===========================*/
 
 const exportBtn = document.getElementById('exportBtn');
 
 function downloadMIDI() {
-    // SECURITY CHECK: Verifica caricamento libreria
+    // SECURITY CHECK: Verify library loading
     if (typeof MidiWriter === 'undefined') {
         alert("Errore critico: Libreria MidiWriter non caricata. Controlla la connessione o il link CDN.");
         return;
     }
 
-    // CONFIGURAZIONE
-    // Mapping strumenti (GM Standard Channel 10)
+    // CONFIGURATION
+    // Instruments mapping (GM Standard Channel 10)
     const midiMap = {
         kick: 36,  // C1
         snare: 38, // D1
@@ -440,39 +443,39 @@ function downloadMIDI() {
         tom: 47    // B1
     };
 
-    // Costanti temporali
+    // Time constants
     const PPQ = 128; // Standard MIDI resolution
     const TICKS_PER_BAR = PPQ * 4; // 512 Ticks per 4/4
-    const BARS_TO_EXPORT = 4; // Lunghezza Loop
+    const BARS_TO_EXPORT = 4; // Loop Lenght
 
-    // Inizializzazione Tracce MIDI
+    // Inizialization of MIDI tracks
     const midiTracks = [];
 
-    // ITERAZIONE TRACCE
-    // Usa l'array globale 'tracks' definito nella sezione 2
+    // TRACKS ITERATION
+    // we use the global array 'tracks' defined at the section 2
     tracks.forEach(t => {
         const track = new MidiWriter.Track();
         
-        // Metadata Traccia
+        // Track's Metadata
         track.addTrackName(`Track ${t.id + 1} - ${t.sample.toUpperCase()}`);
         
-        // Parametri per il calcolo
-        const noteNumber = midiMap[t.sample] || 36; // Fallback a Kick se undefined
+        // parameters for the calculus
+        const noteNumber = midiMap[t.sample] || 36; //Kick fallback if undefined
         const totalStepsToExport = t.steps * BARS_TO_EXPORT;
         
-        // BUFFER DI ATTESA (Accumulatore Delta-Time)
-        // Gestisce i silenzi accumulando la durata degli step vuoti
-        // per applicarli come ritardo (wait) alla prima nota attiva successiva.
+        // WAITING BUFFER ( Delta-Time accumulator)
+        // It handles silences by accumulating the duration of empty steps
+        // to apply them as a delay (wait) to the next active note.
         let waitBuffer = 0;
 
         for (let i = 0; i < totalStepsToExport; i++) {
-            // 1. Logica Pattern (Rotazione + Euclideo)
+            // 1. Euclidean Pattern Logic 
             const patternIdx = i % t.steps;
             const isActive = t.pattern[patternIdx] === 1;
 
-            // 2. Calcolo Temporale di Precisione (Floating Point Compensation)
-            // Calcoliamo i tick assoluti di inizio e fine per questo step specifico
-            // Differenza = Durata esatta (intero) che compensa gli arrotondamenti
+            // 2. Precise Timing Calculation (with Floating Point Compensation)
+            // We calculate the absolute start and end ticks for this specific step.
+            // Difference = Exact Duration (integer) which compensates for rounding.
             const absStartBar = i / t.steps; 
             const absEndBar = (i + 1) / t.steps;
             
@@ -481,22 +484,22 @@ function downloadMIDI() {
             
             const currentStepDuration = tickEnd - tickStart;
 
-            // 3. Scrittura Eventi
+            // 3. Events transcripting
             if (isActive) {
-                // NOTA ON
+                // ON note
                 track.addEvent(new MidiWriter.NoteEvent({
                     pitch: [noteNumber],
-                    duration: 'T' + currentStepDuration, // Durata nota piena (Legato)
-                    wait: 'T' + waitBuffer,              // Applica il ritardo accumulato
+                    duration: 'T' + currentStepDuration,
+                    wait: 'T' + waitBuffer,              
                     channel: 10,
                     velocity: 100
                 }));
                 
-                // Reset buffer dopo aver "speso" l'attesa
+                // Buffer reset after the wait
                 waitBuffer = 0;
             } else {
-                // NOTA OFF (Pausa)
-                // Non scriviamo nulla sul MIDI, accumuliamo solo il tempo
+                // OFF note means pause (export shortcut)
+                // we accumulate time writing anything on the midi
                 waitBuffer += currentStepDuration;
             }
         }
@@ -504,12 +507,12 @@ function downloadMIDI() {
         midiTracks.push(track);
     });
 
-    // GENERAZIONE FILE
+    // FILE GENERATION
     try {
         const writer = new MidiWriter.Writer(midiTracks);
         const blob = new Blob([writer.buildFile()], {type: "audio/midi"});
         
-        // Download forzato
+        // Forced download
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'euclidean_poly_rhythm.mid';
@@ -526,8 +529,8 @@ function downloadMIDI() {
     }
 }
 
-// BINDING PULSANTE
-// Usa replaceChild per garantire che non ci siano listener duplicati (safe-mode)
+// export button BINDINGS
+// replaceChild guarantees there are no duplicated listeners (safe-mode)
 if(exportBtn) {
     const newBtn = exportBtn.cloneNode(true);
     if(exportBtn.parentNode) {

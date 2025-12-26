@@ -185,7 +185,7 @@ button:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-1p
 #startBtn { background: #2ecc71; color: #000; }
 #stopBtn { background: #e74c3c; color: #fff; }
 
-/* Stile Pulsante Export */
+/* Stile Pulsante Export midi */
 #exportBtn { 
   background: #3498db; 
   color: #fff; 
@@ -217,7 +217,7 @@ svg { width: 100%; height: 100%; max-height: 600px; max-width: 600px; }
 }
 .dot.playing { filter: drop-shadow(0 0 8px white); fill: #fff !important; opacity: 1 !important; }
 
-/* Utilities Colori */
+/*  Color Utilities */
 .t0-color { color: var(--track-1); }
 .t1-color { color: var(--track-2); }
 .t2-color { color: var(--track-3); }
