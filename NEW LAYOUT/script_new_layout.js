@@ -35,11 +35,11 @@ setTimeout(() => {
 /* =================================================================
    2. APP STATE
    ================================================================= */
-const tracks = [ 
-  { id: 0, colorVar: '--track-1', radius: 260, steps: 16, pulses: 4, offset: 0, sample: 'kick', pattern: [], playingIdx: -1, timer: null },
-  { id: 1, colorVar: '--track-2', radius: 200, steps: 12, pulses: 5, offset: 0, sample: 'snare', pattern: [], playingIdx: -1, timer: null },
-  { id: 2, colorVar: '--track-3', radius: 140, steps: 8,  pulses: 3, offset: 0, sample: 'hihat', pattern: [], playingIdx: -1, timer: null },
-  { id: 3, colorVar: '--track-4', radius: 80,  steps: 5,  pulses: 2, offset: 0, sample: 'tom',   pattern: [], playingIdx: -1, timer: null }
+const tracks = [
+    { id: 0, colorVar: '--track-1', radius: 260, steps: 16, pulses: 4, offset: 0, sample: 'kick', pattern: [], playingIdx: -1, timer: null },
+    { id: 1, colorVar: '--track-2', radius: 200, steps: 12, pulses: 5, offset: 0, sample: 'snare', pattern: [], playingIdx: -1, timer: null },
+    { id: 2, colorVar: '--track-3', radius: 140, steps: 8, pulses: 3, offset: 0, sample: 'hihat', pattern: [], playingIdx: -1, timer: null },
+    { id: 3, colorVar: '--track-4', radius: 80, steps: 5, pulses: 2, offset: 0, sample: 'tom', pattern: [], playingIdx: -1, timer: null }
 ];
 
 let isPlaying = false;
@@ -48,22 +48,22 @@ let isPlaying = false;
    3. KNOB CLASS
    ================================================================= */
 class Knob {
-  constructor(container, label, min, max, initialValue, colorVar, callback) {
-    this.container = container;
-    this.min = min;
-    this.max = max;
-    this.value = initialValue;
-    this.callback = callback;
-    
-    // UI Config
-    this.minAngle = -135;
-    this.maxAngle = 135;
-    this.indicatorColor = `var(${colorVar})`; 
+    constructor(container, label, min, max, initialValue, colorVar, callback) {
+        this.container = container;
+        this.min = min;
+        this.max = max;
+        this.value = initialValue;
+        this.callback = callback;
 
-    // Create DOM
-    this.wrapper = document.createElement('div');
-    this.wrapper.className = 'knob-container';
-    this.wrapper.innerHTML = `
+        // UI Config
+        this.minAngle = -135;
+        this.maxAngle = 135;
+        this.indicatorColor = `var(${colorVar})`;
+
+        // Create DOM
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = 'knob-container';
+        this.wrapper.innerHTML = `
       <div class="label-display">${label}</div>
       <div class="knob-wrapper">
         <div class="knob">
@@ -72,75 +72,75 @@ class Knob {
       </div>
       <div class="value-display">${this.value}</div>
     `;
-    this.container.appendChild(this.wrapper);
+        this.container.appendChild(this.wrapper);
 
-    this.knobEl = this.wrapper.querySelector('.knob');
-    this.indicatorEl = this.wrapper.querySelector('.knob-indicator');
-    this.displayEl = this.wrapper.querySelector('.value-display');
+        this.knobEl = this.wrapper.querySelector('.knob');
+        this.indicatorEl = this.wrapper.querySelector('.knob-indicator');
+        this.displayEl = this.wrapper.querySelector('.value-display');
 
-    // Drag State
-    this.dragging = false;
-    this.startY = 0;
-    this.startValue = 0;
+        // Drag State
+        this.dragging = false;
+        this.startY = 0;
+        this.startValue = 0;
 
-    this.attachEvents();
-    this.updateUI();
-  }
+        this.attachEvents();
+        this.updateUI();
+    }
 
-  attachEvents() {
-    this.knobEl.addEventListener('pointerdown', (e) => {
-      this.dragging = true;
-      this.startY = e.clientY;
-      this.startValue = this.value;
-      this.knobEl.setPointerCapture(e.pointerId);
-      this.knobEl.style.cursor = 'grabbing';
-    });
+    attachEvents() {
+        this.knobEl.addEventListener('pointerdown', (e) => {
+            this.dragging = true;
+            this.startY = e.clientY;
+            this.startValue = this.value;
+            this.knobEl.setPointerCapture(e.pointerId);
+            this.knobEl.style.cursor = 'grabbing';
+        });
 
-    this.knobEl.addEventListener('pointerup', (e) => {
-      this.dragging = false;
-      this.knobEl.releasePointerCapture(e.pointerId);
-      this.knobEl.style.cursor = 'ns-resize';
-    });
+        this.knobEl.addEventListener('pointerup', (e) => {
+            this.dragging = false;
+            this.knobEl.releasePointerCapture(e.pointerId);
+            this.knobEl.style.cursor = 'ns-resize';
+        });
 
-    this.knobEl.addEventListener('pointermove', (e) => {
-      if (!this.dragging) return;
-      
-      const deltaY = this.startY - e.clientY; 
-      const range = this.max - this.min;
-      
-      const pixelsForFullRotation = 300; 
-      const valuePerPixel = range / pixelsForFullRotation;
-      
-      const valueChange = deltaY * valuePerPixel;
-      let newValue = Math.round(this.startValue + valueChange);
-      
-      this.setValue(newValue);
-    });
-  }
+        this.knobEl.addEventListener('pointermove', (e) => {
+            if (!this.dragging) return;
 
-  setValue(val) {
-    this.value = Math.max(this.min, Math.min(this.max, val));
-    this.updateUI();
-    if (this.callback) this.callback(this.value);
-  }
+            const deltaY = this.startY - e.clientY;
+            const range = this.max - this.min;
 
-  updateLimits(min, max) {
-    this.min = min; this.max = max;
-    if(this.value > max) this.setValue(max);
-    if(this.value < min) this.setValue(min);
-  }
+            const pixelsForFullRotation = 300;
+            const valuePerPixel = range / pixelsForFullRotation;
 
-  updateUI() {
-    const range = this.max - this.min;
-    const angleRange = this.maxAngle - this.minAngle;
-    
-    let percent = 0;
-    if (range > 0) percent = (this.value - this.min) / range;
-    
-    const angle = this.minAngle + (percent * angleRange);
-    this.indicatorEl.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-    this.displayEl.textContent = this.value;
-  }
+            const valueChange = deltaY * valuePerPixel;
+            let newValue = Math.round(this.startValue + valueChange);
+
+            this.setValue(newValue);
+        });
+    }
+
+    setValue(val) {
+        this.value = Math.max(this.min, Math.min(this.max, val));
+        this.updateUI();
+        if (this.callback) this.callback(this.value);
+    }
+
+    updateLimits(min, max) {
+        this.min = min; this.max = max;
+        if (this.value > max) this.setValue(max);
+        if (this.value < min) this.setValue(min);
+    }
+
+    updateUI() {
+        const range = this.max - this.min;
+        const angleRange = this.maxAngle - this.minAngle;
+
+        let percent = 0;
+        if (range > 0) percent = (this.value - this.min) / range;
+
+        const angle = this.minAngle + (percent * angleRange);
+        this.indicatorEl.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+        this.displayEl.textContent = this.value;
+    }
 }
 
 /* =================================================================
@@ -148,84 +148,156 @@ class Knob {
    ================================================================= */
 
 function initInterface() {
-  const trackTitles = [
-    {label: "Sequence 1 (Outer)", color: "var(--track-1)"},
-    {label: "Sequence 2", color: "var(--track-2)"},
-    {label: "Sequence 3", color: "var(--track-3)"},
-    {label: "Sequence 4 (Inner)", color: "var(--track-4)"}
-  ];
-  tracks.forEach((track, index) => {
-    const trackContainer = document.getElementById(`track-${index}`);
+    const trackTitles = [
+        { label: "Sequence 1 (Outer)", color: "var(--track-1)" },
+        { label: "Sequence 2", color: "var(--track-2)" },
+        { label: "Sequence 3", color: "var(--track-3)" },
+        { label: "Sequence 4 (Inner)", color: "var(--track-4)" }
+    ];
+    tracks.forEach((track, index) => {
+        const trackContainer = document.getElementById(`track-${index}`);
 
-    // Titolo colorato
-    const header = document.createElement('div');
-    header.className = 'track-title';
-    header.textContent = trackTitles[index].label;
-    header.style.color = trackTitles[index].color;
-    trackContainer.appendChild(header);
+        // Titolo colorato
+        const header = document.createElement('div');
+        header.className = 'track-title';
+        header.textContent = trackTitles[index].label;
+        header.style.color = trackTitles[index].color;
+        trackContainer.appendChild(header);
 
-    // Steps knob row
-    const stepsRow = document.createElement('div');
-    stepsRow.className = 'knob-row';
-    stepsRow.innerHTML = `<div class="knob-label">Steps</div>`;
-    stepsRow.appendChild(document.createElement('div'));
-    trackContainer.appendChild(stepsRow);
+        // Steps knob row
+        const stepsRow = document.createElement('div');
+        stepsRow.className = 'knob-row';
+        stepsRow.innerHTML = `<div class="knob-label">Steps</div>`;
+        stepsRow.appendChild(document.createElement('div'));
+        trackContainer.appendChild(stepsRow);
 
-    // Pulses knob row
-    const pulsesRow = document.createElement('div');
-    pulsesRow.className = 'knob-row';
-    pulsesRow.innerHTML = `<div class="knob-label">Pulses</div>`;
-    pulsesRow.appendChild(document.createElement('div'));
-    trackContainer.appendChild(pulsesRow);
+        // Pulses knob row
+        const pulsesRow = document.createElement('div');
+        pulsesRow.className = 'knob-row';
+        pulsesRow.innerHTML = `<div class="knob-label">Pulses</div>`;
+        pulsesRow.appendChild(document.createElement('div'));
+        trackContainer.appendChild(pulsesRow);
 
-    // Offset knob row
-    const offsetRow = document.createElement('div');
-    offsetRow.className = 'knob-row';
-    offsetRow.innerHTML = `<div class="knob-label">Offset</div>`;
-    offsetRow.appendChild(document.createElement('div'));
-    trackContainer.appendChild(offsetRow);
+        // Offset knob row
+        const offsetRow = document.createElement('div');
+        offsetRow.className = 'knob-row';
+        offsetRow.innerHTML = `<div class="knob-label">Offset</div>`;
+        offsetRow.appendChild(document.createElement('div'));
+        trackContainer.appendChild(offsetRow);
 
-    // Sound select
-    const soundGroup = document.createElement('div');
-    soundGroup.className = 'standard-input-group';
-    soundGroup.style.marginTop = "10px";
-    soundGroup.innerHTML = `<label>Sound</label>`;
-    const select = document.createElement('select');
-    Object.keys(samples).forEach(key => {
-      const opt = document.createElement('option');
-      opt.value = key;
-      opt.innerText = key.charAt(0).toUpperCase() + key.slice(1);
-      if(key === track.sample) opt.selected = true;
-      select.appendChild(opt);
+        // Sound select + file input
+        const soundGroup = document.createElement('div');
+        soundGroup.className = 'standard-input-group';
+        soundGroup.style.marginTop = "10px";
+        soundGroup.innerHTML = `<label>Sound</label>`;
+        const select = document.createElement('select');
+        Object.keys(samples).forEach(key => {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.innerText = key.charAt(0).toUpperCase() + key.slice(1);
+            if (key === track.sample) opt.selected = true;
+            select.appendChild(opt);
+        });
+        soundGroup.appendChild(select);
+
+        track.userSampleOpt = null;
+
+        // File input per sample custom
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'audio/*';
+        fileInput.style.marginTop = "6px";
+        soundGroup.appendChild(fileInput);
+
+        trackContainer.appendChild(soundGroup);
+
+        // Inizializza i knob nelle rispettive righe
+        new Knob(stepsRow.lastChild, 'STEPS', 1, 32, track.steps, track.colorVar, (v) => {
+            track.steps = v;
+            pulsesK.updateLimits(0, track.steps);
+            offsetK.updateLimits(0, track.steps - 1);
+            regenerateTrack(track);
+        });
+        const pulsesK = new Knob(pulsesRow.lastChild, 'PULSES', 0, track.steps, track.pulses, track.colorVar, (v) => {
+            track.pulses = v;
+            regenerateTrack(track);
+        });
+        const offsetK = new Knob(offsetRow.lastChild, 'OFFSET', 0, track.steps - 1, track.offset, track.colorVar, (v) => {
+            track.offset = v;
+            regenerateTrack(track);
+        });
+
+        // Cambia sample (default o custom)
+        select.addEventListener('change', (e) => {
+            track.sample = e.target.value;
+
+            // Se è un sample custom, usa il player salvato
+            if (track.sample.startsWith('user_') && track.customPlayer) {
+                track.customPlayer.start();
+            } else if (players.loaded && players.has(track.sample)) {
+                // Altrimenti usa i sample di default
+                players.player(track.sample).start();
+            }
+        });
+        // Caricamento sample custom
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('audio/')) {
+                statusEl.textContent = "File non audio!";
+                statusEl.style.color = "#e74c3c";
+                return;
+            }
+
+            statusEl.textContent = "Loading...";
+            statusEl.style.color = "#fff";
+
+            const url = URL.createObjectURL(file);
+            const userSampleName = `user_${track.id}_${Date.now()}`;
+
+            try {
+                // Crea un nuovo Player isolato per il sample custom
+                const customPlayer = new Tone.Player(url).toDestination();
+
+                // Aspetta che il buffer sia caricato
+                await customPlayer.load(url);
+
+                // Rimuovi la vecchia option "User Sample" se esiste
+                if (track.userSampleOpt) {
+                    select.removeChild(track.userSampleOpt);
+                    track.userSampleOpt = null;
+                }
+
+                // Se c'era un player custom precedente, disconnettilo
+                if (track.customPlayer) {
+                    track.customPlayer.dispose();
+                }
+
+                // Salva il nuovo player sulla traccia
+                track.customPlayer = customPlayer;
+                track.sample = userSampleName;
+
+                // Aggiungi la nuova option "User Sample"
+                track.userSampleOpt = document.createElement('option');
+                track.userSampleOpt.value = userSampleName;
+                track.userSampleOpt.innerText = "User Sample";
+                select.appendChild(track.userSampleOpt);
+                select.value = userSampleName;
+
+                statusEl.textContent = "Sample loaded!";
+                statusEl.style.color = "#2ecc71";
+                URL.revokeObjectURL(url);
+
+            } catch (err) {
+                console.error("Errore caricamento sample:", err);
+                statusEl.textContent = "Sample load error: " + err.message;
+                statusEl.style.color = "#e74c3c";
+                URL.revokeObjectURL(url);
+            }
+        });
+        regenerateTrack(track);
     });
-    soundGroup.appendChild(select);
-    trackContainer.appendChild(soundGroup);
-
-    // Inizializza i knob nelle rispettive righe
-    new Knob(stepsRow.lastChild, 'STEPS', 1, 32, track.steps, track.colorVar, (v) => {
-      track.steps = v;
-      pulsesK.updateLimits(0, track.steps);
-      offsetK.updateLimits(0, track.steps - 1);
-      regenerateTrack(track);
-    });
-    const pulsesK = new Knob(pulsesRow.lastChild, 'PULSES', 0, track.steps, track.pulses, track.colorVar, (v) => {
-      track.pulses = v;
-      regenerateTrack(track);
-    });
-    const offsetK = new Knob(offsetRow.lastChild, 'OFFSET', 0, track.steps - 1, track.offset, track.colorVar, (v) => {
-      track.offset = v;
-      regenerateTrack(track);
-    });
-
-    select.addEventListener('change', (e) => {
-      track.sample = e.target.value;
-      if(players.loaded) players.player(track.sample).start();
-    });
-
-    regenerateTrack(track);
-  });
 }
-
 /* =================================================================
    5. MATH & DRAW
    ================================================================= */
@@ -257,10 +329,10 @@ function generateEuclideanPattern(steps, pulses) {
 }
 
 function rotateArray(arr, shift) {
-  const n = arr.length;
-  if (n === 0) return arr;
-  shift = ((shift % n) + n) % n;
-  return arr.slice(-shift).concat(arr.slice(0, -shift));
+    const n = arr.length;
+    if (n === 0) return arr;
+    shift = ((shift % n) + n) % n;
+    return arr.slice(-shift).concat(arr.slice(0, -shift));
 }
 
 function regenerateTrack(track) {
@@ -290,20 +362,20 @@ function drawAllCircles() {
         for (let i = 0; i < track.steps; i++) {
             const p = polarPos(i, track.steps, track.radius);
             const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            
+
             dot.setAttribute("cx", p.x);
             dot.setAttribute("cy", p.y);
             dot.setAttribute("r", track.pattern[i] ? 6 : 3);
-            
+
             let className = "dot";
-            if(track.pattern[i]) className += ` t${tIdx}-fill`; 
-            
+            if (track.pattern[i]) className += ` t${tIdx}-fill`;
+
             dot.style.opacity = track.pattern[i] ? 0.9 : 0.3;
-            if(!track.pattern[i]) dot.style.fill = "#444";
-            
+            if (!track.pattern[i]) dot.style.fill = "#444";
+
             dot.setAttribute("class", className);
             dot.id = `dot-${tIdx}-${i}`;
-            
+
             // Manual Toggle
             dot.onclick = () => {
                 track.pattern[i] = track.pattern[i] ? 0 : 1;
@@ -332,14 +404,14 @@ function playStep(time) {
             track.playingIdx = stepIdx;
 
             // Visuals
-            for(let i = 0; i < track.steps; i++) {
+            for (let i = 0; i < track.steps; i++) {
                 const d = document.getElementById(`dot-${track.id}-${i}`);
-                if(d) d.classList.remove('playing');
+                if (d) d.classList.remove('playing');
             }
             const currentDot = document.getElementById(`dot-${track.id}-${stepIdx}`);
-            if(currentDot) {
+            if (currentDot) {
                 currentDot.classList.add('playing');
-                if(track.pattern[stepIdx]) {
+                if (track.pattern[stepIdx]) {
                     currentDot.style.r = 9;
                     setTimeout(() => currentDot.style.r = 6, 80);
                 }
@@ -347,7 +419,12 @@ function playStep(time) {
 
             // Audio Trigger (usando il tempo fornito da Tone.Transport)
             if (track.pattern[stepIdx] === 1) {
-                if(players.loaded && players.has(track.sample)) {
+                // Se è un sample custom, usa il player salvato
+                if (track.sample.startsWith('user_') && track.customPlayer) {
+                    track.customPlayer.start(time);
+                }
+                // Altrimenti usa i sample di default
+                else if (players.loaded && players.has(track.sample)) {
                     players.player(track.sample).start(time);
                 }
             }
@@ -366,7 +443,7 @@ function lcm(a, b) {
     return (a * b) / gcd(a, b);
 }
 async function startSequencer() {
-    if(isPlaying) return;
+    if (isPlaying) return;
     await Tone.start();
     isPlaying = true;
     startBtn.style.background = "#222";
@@ -406,7 +483,7 @@ function stopSequencer() {
     globalStep = 0;
     tracks.forEach(track => track.playingIdx = -1);
     document.querySelectorAll('.dot').forEach(d => d.classList.remove('playing'));
-    drawAllCircles(); 
+    drawAllCircles();
 }
 
 // Bindings
@@ -447,14 +524,14 @@ function downloadMIDI() {
     // Usa l'array globale 'tracks' definito nella sezione 2
     tracks.forEach(t => {
         const track = new MidiWriter.Track();
-        
+
         // Metadata Traccia
         track.addTrackName(`Track ${t.id + 1} - ${t.sample.toUpperCase()}`);
-        
+
         // Parametri per il calcolo
         const noteNumber = midiMap[t.sample] || 36; // Fallback a Kick se undefined
         const totalStepsToExport = t.steps * BARS_TO_EXPORT;
-        
+
         // BUFFER DI ATTESA (Accumulatore Delta-Time)
         // Gestisce i silenzi accumulando la durata degli step vuoti
         // per applicarli come ritardo (wait) alla prima nota attiva successiva.
@@ -468,12 +545,12 @@ function downloadMIDI() {
             // 2. Calcolo Temporale di Precisione (Floating Point Compensation)
             // Calcoliamo i tick assoluti di inizio e fine per questo step specifico
             // Differenza = Durata esatta (intero) che compensa gli arrotondamenti
-            const absStartBar = i / t.steps; 
+            const absStartBar = i / t.steps;
             const absEndBar = (i + 1) / t.steps;
-            
+
             const tickStart = Math.round(absStartBar * TICKS_PER_BAR);
             const tickEnd = Math.round(absEndBar * TICKS_PER_BAR);
-            
+
             const currentStepDuration = tickEnd - tickStart;
 
             // 3. Scrittura Eventi
@@ -486,7 +563,7 @@ function downloadMIDI() {
                     channel: 10,
                     velocity: 100
                 }));
-                
+
                 // Reset buffer dopo aver "speso" l'attesa
                 waitBuffer = 0;
             } else {
@@ -495,26 +572,26 @@ function downloadMIDI() {
                 waitBuffer += currentStepDuration;
             }
         }
-        
+
         midiTracks.push(track);
     });
 
     // GENERAZIONE FILE
     try {
         const writer = new MidiWriter.Writer(midiTracks);
-        const blob = new Blob([writer.buildFile()], {type: "audio/midi"});
-        
+        const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
+
         // Download forzato
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'euclidean_poly_rhythm.mid';
         document.body.appendChild(a);
         a.click();
-        
+
         // Garbage collection
         document.body.removeChild(a);
         URL.revokeObjectURL(a.href);
-        
+
     } catch (e) {
         console.error("Errore durante la scrittura del file MIDI:", e);
         alert("Errore nella generazione del file MIDI. Vedi console.");
@@ -523,9 +600,9 @@ function downloadMIDI() {
 
 // BINDING PULSANTE
 // Usa replaceChild per garantire che non ci siano listener duplicati (safe-mode)
-if(exportBtn) {
+if (exportBtn) {
     const newBtn = exportBtn.cloneNode(true);
-    if(exportBtn.parentNode) {
+    if (exportBtn.parentNode) {
         exportBtn.parentNode.replaceChild(newBtn, exportBtn);
         newBtn.addEventListener('click', downloadMIDI);
     }

@@ -31,7 +31,7 @@ body {
   background: var(--panel-bg);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
   display: flex;
   gap: 20px;
   align-items: flex-start;
@@ -102,7 +102,7 @@ body {
   border: 2px solid #333;
   position: relative;
   cursor: ns-resize;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 .knob-indicator {
@@ -139,6 +139,7 @@ body {
   color: #888;
   margin-bottom: 4px;
 }
+
 .standard-input-group input,
 .standard-input-group select {
   width: 100%;
@@ -170,14 +171,19 @@ input:focus {
   background: var(--panel-bg);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
   width: 200px;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.status-msg { text-align: center; font-size: 11px; color: #666; margin-bottom: 10px; }
+.status-msg {
+  text-align: center;
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 10px;
+}
 
 .buttons-row {
   display: flex;
@@ -196,11 +202,31 @@ button {
   transition: opacity 0.2s;
   text-transform: uppercase;
 }
-button:hover { opacity: 0.8; }
-#startBtn { background: #2ecc71; color: #000; }
-#stopBtn { background: #e74c3c; color: #fff; }
-#exportBtn { background: #3498db; color: #fff; font-weight: 800; letter-spacing: 1px; }
-#exportBtn:hover:not(:disabled) { box-shadow: 0 0 15px rgba(52, 152, 219, 0.6); }
+
+button:hover {
+  opacity: 0.8;
+}
+
+#startBtn {
+  background: #2ecc71;
+  color: #000;
+}
+
+#stopBtn {
+  background: #e74c3c;
+  color: #fff;
+}
+
+#exportBtn {
+  background: #3498db;
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+#exportBtn:hover:not(:disabled) {
+  box-shadow: 0 0 15px rgba(52, 152, 219, 0.6);
+}
 
 .visual {
   position: relative;
@@ -213,25 +239,45 @@ button:hover { opacity: 0.8; }
   border-radius: 8px;
 }
 
-svg { width: 100%; height: 100%; max-height: 700px; max-width: 700px; }
-.guide { fill: none; stroke: rgba(255,255,255,0.06); }
+svg {
+  width: 100%;
+  height: 100%;
+  max-height: 700px;
+  max-width: 700px;
+}
 
 .dot {
   opacity: 0.28;
   transition: opacity 0.12s ease;
   cursor: pointer;
 }
-.dot.playing { opacity: 1 !important; filter: drop-shadow(0 0 8px currentColor); }
 
-.t0-fill { fill: var(--track-1); }
-.t1-fill { fill: var(--track-2); }
-.t2-fill { fill: var(--track-3); }
-.t3-fill { fill: var(--track-4); }
+.dot.playing {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.t0-fill {
+  fill: var(--track-1);
+}
+
+.t1-fill {
+  fill: var(--track-2);
+}
+
+.t2-fill {
+  fill: var(--track-3);
+}
+
+.t3-fill {
+  fill: var(--track-4);
+}
 
 .centerLabel {
   position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%,-50%);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
   color: #666;
