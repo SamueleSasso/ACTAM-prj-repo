@@ -295,16 +295,14 @@ function drawAllCircles() {
         }
     });
 }
-
 /* =================================================================
-   6. POLY-SEQUENCER ENGINE (MCM & CLOCK GLOBALE)
+   6. POLY-SEQUENCER ENGINE (MCM & CLOCK GLOBALE) - VERSIONE Tone.Transport
    ================================================================= */
 let globalStep = 0;
-let globalInterval = null;
+let transportEventId = null;
 
-function playLoop() {
-    if (!isPlaying) return;
-
+// Funzione principale chiamata dal clock di Tone.Transport
+function playStep(time) {
     // Calcola la risoluzione globale (MCM)
     const stepsPerBar = tracks.reduce((acc, t) => lcm(acc, t.steps), 1);
 
@@ -328,21 +326,17 @@ function playLoop() {
                 }
             }
 
-            // Audio Trigger
+            // Audio Trigger (usando il tempo fornito da Tone.Transport)
             if (track.pattern[stepIdx] === 1) {
                 if(players.loaded && players.has(track.sample)) {
-                    players.player(track.sample).start();
+                    players.player(track.sample).start(time);
                 }
             }
         }
     });
 
-    const bpm = parseInt(document.getElementById('bpm').value) || 120;
-    const barDuration = 4 * 60000 / bpm; // 4 beat
-    const stepDuration = barDuration / stepsPerBar;
-
+    // Avanza step
     globalStep = (globalStep + 1) % stepsPerBar;
-    globalInterval = setTimeout(playLoop, stepDuration);
 }
 
 // Funzioni per MCM
@@ -352,7 +346,6 @@ function gcd(a, b) {
 function lcm(a, b) {
     return (a * b) / gcd(a, b);
 }
-
 async function startSequencer() {
     if(isPlaying) return;
     await Tone.start();
@@ -360,15 +353,38 @@ async function startSequencer() {
     startBtn.style.background = "#222";
     startBtn.style.color = "#888";
     globalStep = 0;
-    playLoop();
+
+    // Imposta BPM
+    const bpm = parseInt(document.getElementById('bpm').value) || 120;
+    Tone.Transport.bpm.value = bpm;
+
+    // Calcola steps per bar (MCM)
+    const stepsPerBar = tracks.reduce((acc, t) => lcm(acc, t.steps), 1);
+
+    // Imposta la risoluzione dei tick del Transport (PPQ = stepsPerBar * 4)
+    Tone.Transport.PPQ = stepsPerBar;
+
+    // Rimuovi eventuali eventi precedenti
+    if (transportEventId !== null) {
+        Tone.Transport.clear(transportEventId);
+    }
+
+    // Schedula playStep ogni 4 tick ("4i" = ogni step)
+    transportEventId = Tone.Transport.scheduleRepeat(playStep, "4i");
+
+    Tone.Transport.start("+0.05");
 }
 
 function stopSequencer() {
     isPlaying = false;
     startBtn.style.background = "#2ecc71";
     startBtn.style.color = "#000";
-    clearTimeout(globalInterval);
-    globalInterval = null;
+    if (transportEventId !== null) {
+        Tone.Transport.clear(transportEventId);
+        transportEventId = null;
+    }
+    Tone.Transport.stop();
+    globalStep = 0;
     tracks.forEach(track => track.playingIdx = -1);
     document.querySelectorAll('.dot').forEach(d => d.classList.remove('playing'));
     drawAllCircles(); 
@@ -377,8 +393,6 @@ function stopSequencer() {
 // Bindings
 startBtn.onclick = startSequencer;
 document.getElementById('stopBtn').onclick = stopSequencer;
-
-
 
 /* =================================================================
    7. MIDI EXPORT ENGINE (ENGINEERING GRADE v2.0)
