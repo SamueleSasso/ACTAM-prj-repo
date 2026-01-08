@@ -13,6 +13,7 @@
 <body>
   <div class="wrap">
     <div class="panel">
+      
       <div class="left-section">
         <div class="tracks-columns">
           <div class="controls" id="track-0"></div>
@@ -20,6 +21,7 @@
           <div class="controls" id="track-2"></div>
           <div class="controls" id="track-3"></div>
         </div>
+        
         <div class="velocity-panel">
           <div class="velocity-header">
             <h3>VELOCITY</h3>
@@ -33,23 +35,28 @@
           <div class="velocity-bars" id="velocityBars"></div>
         </div>
       </div>
-      <div class="visual">
-        <svg id="mainSvg" viewBox="0 0 700 700">
-          <g id="tracksGroup" transform="translate(350,350)"></g>
-        </svg>
-      </div>
-      <div class="global-controls">
-        <div id="status" class="status-msg">Loading Samples...</div>
-        <div class="standard-input-group">
-          <label>BPM</label>
-          <input id="bpm" type="number" value="120">
+
+      <div class="right-section">
+        <div class="visual">
+          <svg id="mainSvg" viewBox="0 0 700 700">
+            <g id="tracksGroup" transform="translate(350,350)"></g>
+          </svg>
         </div>
-        <div class="buttons-row">
-          <button id="startBtn">START</button>
-          <button id="stopBtn">STOP</button>
-          <button id="exportBtn">MIDI</button>
+        
+        <div class="global-controls">
+          <div id="status" class="status-msg">Loading Samples...</div>
+          <div class="standard-input-group" style="margin-bottom: 10px;">
+            <label>MASTER BPM</label>
+            <input id="bpm" type="number" value="120" style="text-align:center; font-size:14px;">
+          </div>
+          <div class="buttons-row">
+            <button id="startBtn">START</button>
+            <button id="stopBtn">STOP</button>
+            <button id="exportBtn">MIDI</button>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 
