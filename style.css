@@ -5,7 +5,7 @@
   --track-2: #6be0ff;
   --track-3: #2ecc71;
   --track-4: #f39c12;
-  --knob-size: 50px; /* Optimal balance for 150px width */
+  --knob-size: 60px;
   --knob-bg: #1a1b20;
   --indicator-color: #e74c3c;
 }
@@ -17,6 +17,7 @@ body {
   font-family: system-ui, sans-serif;
   user-select: none;
   height: 100vh;
+  width: 100vw;
   overflow: hidden;
 }
 
@@ -31,14 +32,14 @@ body {
 .panel {
   display: flex;
   flex-direction: row;
-  gap: 25px; /* Reduced global gap */
+  justify-content: space-evenly;
   align-items: center;
-  justify-content: center;
   background: var(--panel-bg);
-  padding: 25px; /* Less padding around the edges */
+  width: 95vw;
+  height: 92vh;
+  padding: 0 2vw;
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-  max-height: 98vh;
   box-sizing: border-box;
 }
 
@@ -46,32 +47,33 @@ body {
 .left-section {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Tighter vertical spacing */
-  justify-content: center;
-  align-items: center; 
+  justify-content: center; 
+  gap: 25px; 
+  height: 100%;
 }
 
 .tracks-columns {
   display: flex;
   flex-direction: row;
-  gap: 10px; /* Tighter column gaps */
+  gap: 15px;
 }
 
 .controls {
-  /* NARROWER WIDTH */
-  width: 150px;
+  width: 180px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 15px;
   background: #0e0e11;
-  padding: 15px 12px;
+  padding: 20px 15px;
   border-radius: 12px;
   border: 1px solid #222;
+  min-height: 40vh; 
 }
 
 .track-title {
   font-weight: bold;
-  font-size: 13px; /* Readable */
+  font-size: 14px;
   letter-spacing: 0.5px;
   margin-bottom: 5px;
   text-align: center;
@@ -85,15 +87,15 @@ body {
   justify-content: space-between;
   align-items: center;
   background: transparent;
-  padding: 2px 0; /* Minimized padding */
+  padding: 2px 0;
 }
 
 .knob-label {
-  font-size: 11px; /* Increased for readability */
+  font-size: 11px;
   font-weight: bold;
-  color: #999; /* Lighter text for contrast */
+  color: #999;
   text-transform: uppercase;
-  width: 50px;
+  width: 55px;
 }
 
 .knob-container {
@@ -121,7 +123,7 @@ body {
 }
 
 .knob-indicator {
-  width: 4px;
+  width: 5px;
   height: 40%;
   background: var(--indicator-color);
   position: absolute;
@@ -134,9 +136,9 @@ body {
 
 .value-display {
   text-align: center;
-  margin-top: 3px;
+  margin-top: 4px;
   font-family: monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--track-2);
 }
 
@@ -144,7 +146,7 @@ body {
 
 .standard-input-group label {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   color: #888;
   margin-bottom: 4px;
 }
@@ -152,7 +154,7 @@ body {
 .standard-input-group input,
 .standard-input-group select {
   width: 100%;
-  padding: 6px; /* Taller click target */
+  padding: 8px;
   background: #0d0d0f;
   border: 1px solid #333;
   color: white;
@@ -160,49 +162,48 @@ body {
   box-sizing: border-box;
   font-family: inherit;
   font-size: 12px;
-  height: 28px; /* Fixed height for consistency */
+  height: 32px;
 }
 
 /* ===== VELOCITY PANEL ===== */
 .velocity-panel {
-  /* MATH: (150px * 4) + (10px * 3) = 630px */
-  width: 630px; 
+  width: 765px; 
   max-width: none; 
-  
   box-sizing: border-box;
   background: #0e0e11;
-  padding: 12px;
+  padding: 15px;
   border-radius: 12px;
   border: 1px solid #222;
+  margin: 0; 
 }
 
 .velocity-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .velocity-header h3 {
   margin: 0;
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 1px;
 }
 
 .velocity-header select {
-  width: 100px;
-  padding: 2px;
-  height: 24px;
+  width: 120px;
+  padding: 4px;
+  height: 28px;
 }
 
 .velocity-bars {
   display: flex;
-  gap: 5px;
+  gap: 6px;
   align-items: flex-end;
-  height: 70px; /* Compact but usable */
+  height: 12vh; 
   background: #111217;
-  padding: 8px;
+  padding: 10px;
   border-radius: 8px;
   border: 1px solid #222;
 }
@@ -224,7 +225,7 @@ body {
   -webkit-appearance: slider-vertical;
   accent-color: currentColor;
   margin: 0;
-  cursor: pointer; /* Makes interaction clear */
+  cursor: pointer;
 }
 
 .velocity-label, .velocity-value { display: none; }
@@ -241,15 +242,24 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 15px;
+  gap: 0; /* Gap reduced to 0, relying on negative margins */
+  height: 100%;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .visual {
-  width: 600px;
-  height: 600px;
+  width: 70vh;
+  height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  /* CHANGED: Black Box for contrast */
+  background: #000;
+  border: 1px solid #222;
+  border-radius: 20px; /* Slight rounding for the box */
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.8); /* Inner shadow for depth */
 }
 
 svg {
@@ -262,23 +272,27 @@ svg {
   max-width: 450px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
+  
+  /* CHANGED: Negative margin pulls buttons up into the SVG's empty space */
+  margin-top: -30px; 
+  z-index: 10; /* Ensures buttons are clickable if they overlap slightly */
 }
 
 .buttons-row {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   width: 100%;
 }
 
 button {
   flex: 1;
-  padding: 12px;
+  padding: 1.5vh;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 15px;
   text-transform: uppercase;
   box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
@@ -290,20 +304,14 @@ button:hover { opacity: 0.9; transform: translateY(-1px); }
 
 .status-msg {
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   color: #666;
-  height: 15px; 
+  height: 20px; 
 }
 
-@media (max-height: 900px) {
-  .visual { width: 500px; height: 500px; }
-  .panel { transform: scale(0.95); }
-}
-
-/* === VISUALIZER === */
 .guide { 
   fill: none; 
-  stroke: rgba(255, 255, 255, 0.15); /* Lightened as requested */
+  stroke: rgba(255, 255, 255, 0.15); 
 }
 
 .dot { opacity: 0.28; transition: opacity 0.12s ease; cursor: pointer; }
