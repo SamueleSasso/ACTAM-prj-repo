@@ -429,7 +429,7 @@ function drawAllCircles() {
         const guide = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         guide.setAttribute("r", track.radius);
         guide.setAttribute("class", "guide");
-        guide.style.stroke = "rgba(255,255,255,0.1)";
+        guide.style.stroke = "rgba(255, 255, 255, 0.5)";
         tracksGroup.appendChild(guide);
 
         // Dots
@@ -439,13 +439,13 @@ function drawAllCircles() {
 
             dot.setAttribute("cx", p.x);
             dot.setAttribute("cy", p.y);
-            dot.setAttribute("r", track.pattern[i] ? 6 : 3);
+            dot.setAttribute("r", track.pattern[i] ? 6 : 4.5);
 
             let className = "dot";
             if (track.pattern[i]) className += ` t${tIdx}-fill`;
 
-            dot.style.opacity = track.pattern[i] ? 0.9 : 0.3;
-            if (!track.pattern[i]) dot.style.fill = "#444";
+            dot.style.opacity = track.pattern[i] ? 0.9 : 0.5;
+            if (!track.pattern[i]) dot.style.fill = "#ffffff8a";
 
             dot.setAttribute("class", className);
             dot.id = `dot-${tIdx}-${i}`;
