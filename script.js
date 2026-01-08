@@ -1,15 +1,13 @@
-
-
 /* =================================================================
    1. AUDIO ENGINE SETUP
    ================================================================= */
 const statusEl = document.getElementById('status');
 const startBtn = document.getElementById('startBtn');
 
-// Central panner
+// Panner centrale
 const masterPanner = new Tone.Panner(0).toDestination();
 
-// Samples list
+// Lista campioni
 const samples = {
     kick: "https://tonejs.github.io/audio/drum-samples/CR78/kick.mp3",
     snare: "https://tonejs.github.io/audio/drum-samples/CR78/snare.mp3",
@@ -17,7 +15,7 @@ const samples = {
     tom: "https://tonejs.github.io/audio/drum-samples/CR78/tom1.mp3",
 };
 
-// We are building the players
+// Creiamo i player
 const players = new Tone.Players(samples, {
     onload: () => {
         statusEl.textContent = "AUDIO READY";
@@ -26,7 +24,7 @@ const players = new Tone.Players(samples, {
     }
 }).connect(masterPanner);
 
-// Security Timeout
+// Timeout di sicurezza
 setTimeout(() => {
     if (!players.loaded) {
         statusEl.textContent = "Audio Loading Slow... (Press Start Anyway)";
@@ -37,36 +35,39 @@ setTimeout(() => {
 /* =================================================================
    2. APP STATE
    ================================================================= */
-const tracks = [ 
-  // Aggiunti: eventId (per cancellare lo schedule) e currentStep (contatore interno)
-  { id: 0, colorVar: '--track-1', radius: 260, steps: 16, pulses: 4, offset: 0, sample: 'kick', pattern: [], playingIdx: -1, eventId: null, currentStep: 0 },
-  { id: 1, colorVar: '--track-2', radius: 200, steps: 12, pulses: 5, offset: 0, sample: 'snare', pattern: [], playingIdx: -1, eventId: null, currentStep: 0 },
-  { id: 2, colorVar: '--track-3', radius: 140, steps: 8,  pulses: 3, offset: 0, sample: 'hihat', pattern: [], playingIdx: -1, eventId: null, currentStep: 0 },
-  { id: 3, colorVar: '--track-4', radius: 80,  steps: 5,  pulses: 2, offset: 0, sample: 'tom',   pattern: [], playingIdx: -1, eventId: null, currentStep: 0 }
+const tracks = [
+    { id: 0, colorVar: '--track-1', radius: 260, steps: 16, pulses: 4, offset: 0, sample: 'kick', pattern: [], playingIdx: -1, timer: null },
+    { id: 1, colorVar: '--track-2', radius: 200, steps: 12, pulses: 5, offset: 0, sample: 'snare', pattern: [], playingIdx: -1, timer: null },
+    { id: 2, colorVar: '--track-3', radius: 140, steps: 8, pulses: 3, offset: 0, sample: 'hihat', pattern: [], playingIdx: -1, timer: null },
+    { id: 3, colorVar: '--track-4', radius: 80, steps: 5, pulses: 2, offset: 0, sample: 'tom', pattern: [], playingIdx: -1, timer: null }
 ];
+tracks.forEach(track => {
+    track.velocity = new Array(track.steps).fill(100); // Inizializza velocity a 100 per ogni step
+});
 
+let currentVelocityTrack = 0; // Traccia selezionata nel velocity panel
 let isPlaying = false;
 
 /* =================================================================
    3. KNOB CLASS
    ================================================================= */
 class Knob {
-  constructor(container, label, min, max, initialValue, colorVar, callback) {
-    this.container = container;
-    this.min = min;
-    this.max = max;
-    this.value = initialValue;
-    this.callback = callback;
-    
-    // UI Config
-    this.minAngle = -135;
-    this.maxAngle = 135;
-    this.indicatorColor = `var(${colorVar})`; 
+    constructor(container, label, min, max, initialValue, colorVar, callback) {
+        this.container = container;
+        this.min = min;
+        this.max = max;
+        this.value = initialValue;
+        this.callback = callback;
 
-    // Create DOM
-    this.wrapper = document.createElement('div');
-    this.wrapper.className = 'knob-container';
-    this.wrapper.innerHTML = `
+        // UI Config
+        this.minAngle = -135;
+        this.maxAngle = 135;
+        this.indicatorColor = `var(${colorVar})`;
+
+        // Create DOM
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = 'knob-container';
+        this.wrapper.innerHTML = `
       <div class="label-display">${label}</div>
       <div class="knob-wrapper">
         <div class="knob">
@@ -75,146 +76,290 @@ class Knob {
       </div>
       <div class="value-display">${this.value}</div>
     `;
-    this.container.appendChild(this.wrapper);
+        this.container.appendChild(this.wrapper);
 
-    this.knobEl = this.wrapper.querySelector('.knob');
-    this.indicatorEl = this.wrapper.querySelector('.knob-indicator');
-    this.displayEl = this.wrapper.querySelector('.value-display');
+        this.knobEl = this.wrapper.querySelector('.knob');
+        this.indicatorEl = this.wrapper.querySelector('.knob-indicator');
+        this.displayEl = this.wrapper.querySelector('.value-display');
 
-    // Drag State
-    this.dragging = false;
-    this.startY = 0;
-    this.startValue = 0;
+        // Drag State
+        this.dragging = false;
+        this.startY = 0;
+        this.startValue = 0;
 
-    this.attachEvents();
-    this.updateUI();
-  }
+        this.attachEvents();
+        this.updateUI();
+    }
 
-  attachEvents() {
-    this.knobEl.addEventListener('pointerdown', (e) => {
-      this.dragging = true;
-      this.startY = e.clientY;
-      this.startValue = this.value;
-      this.knobEl.setPointerCapture(e.pointerId);
-      this.knobEl.style.cursor = 'grabbing';
-    });
+    attachEvents() {
+        this.knobEl.addEventListener('pointerdown', (e) => {
+            this.dragging = true;
+            this.startY = e.clientY;
+            this.startValue = this.value;
+            this.knobEl.setPointerCapture(e.pointerId);
+            this.knobEl.style.cursor = 'grabbing';
+        });
 
-    this.knobEl.addEventListener('pointerup', (e) => {
-      this.dragging = false;
-      this.knobEl.releasePointerCapture(e.pointerId);
-      this.knobEl.style.cursor = 'ns-resize';
-    });
+        this.knobEl.addEventListener('pointerup', (e) => {
+            this.dragging = false;
+            this.knobEl.releasePointerCapture(e.pointerId);
+            this.knobEl.style.cursor = 'ns-resize';
+        });
 
-    this.knobEl.addEventListener('pointermove', (e) => {
-      if (!this.dragging) return;
-      
-      const deltaY = this.startY - e.clientY; 
-      const range = this.max - this.min;
-      
-      const pixelsForFullRotation = 300; 
-      const valuePerPixel = range / pixelsForFullRotation;
-      
-      const valueChange = deltaY * valuePerPixel;
-      let newValue = Math.round(this.startValue + valueChange);
-      
-      this.setValue(newValue);
-    });
-  }
+        this.knobEl.addEventListener('pointermove', (e) => {
+            if (!this.dragging) return;
 
-  setValue(val) {
-    this.value = Math.max(this.min, Math.min(this.max, val));
-    this.updateUI();
-    if (this.callback) this.callback(this.value);
-  }
+            const deltaY = this.startY - e.clientY;
+            const range = this.max - this.min;
 
-  updateLimits(min, max) {
-    this.min = min; this.max = max;
-    if(this.value > max) this.setValue(max);
-    if(this.value < min) this.setValue(min);
-  }
+            const pixelsForFullRotation = 300;
+            const valuePerPixel = range / pixelsForFullRotation;
 
-  updateUI() {
-    const range = this.max - this.min;
-    const angleRange = this.maxAngle - this.minAngle;
-    
-    let percent = 0;
-    if (range > 0) percent = (this.value - this.min) / range;
-    
-    const angle = this.minAngle + (percent * angleRange);
-    this.indicatorEl.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-    this.displayEl.textContent = this.value;
-  }
+            const valueChange = deltaY * valuePerPixel;
+            let newValue = Math.round(this.startValue + valueChange);
+
+            this.setValue(newValue);
+        });
+    }
+
+    setValue(val) {
+        this.value = Math.max(this.min, Math.min(this.max, val));
+        this.updateUI();
+        if (this.callback) this.callback(this.value);
+    }
+
+    updateLimits(min, max) {
+        this.min = min; this.max = max;
+        if (this.value > max) this.setValue(max);
+        if (this.value < min) this.setValue(min);
+    }
+
+    updateUI() {
+        const range = this.max - this.min;
+        const angleRange = this.maxAngle - this.minAngle;
+
+        let percent = 0;
+        if (range > 0) percent = (this.value - this.min) / range;
+
+        const angle = this.minAngle + (percent * angleRange);
+        this.indicatorEl.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+        this.displayEl.textContent = this.value;
+    }
 }
 
 /* =================================================================
    4. UI GENERATION
    ================================================================= */
-const tracksContainer = document.getElementById('tracks-container');
+const velocityBarsContainer = document.getElementById('velocityBars');
+function renderVelocityBars() {
+    const track = tracks[currentVelocityTrack];
+    velocityBarsContainer.innerHTML = '';
 
-function initInterface() {
-  tracks.forEach((track, index) => {
-    
-    // Row Container
-    const row = document.createElement('div');
-    row.className = 'track-row';
-    row.style.borderLeftColor = `var(${track.colorVar})`;
+    for (let i = 0; i < track.steps; i++) {
+        const container = document.createElement('div');
+        container.className = `velocity-bar-container track-${currentVelocityTrack}`;
+        container.setAttribute('data-step', i);
 
-    // Header
-    const header = document.createElement('div');
-    header.className = 'track-header';
-    header.innerHTML = `<span class="track-title" style="color:var(${track.colorVar})">TRACK ${index + 1}</span>`;
-    
-    // Select
-    const select = document.createElement('select');
-    Object.keys(samples).forEach(key => {
-        const opt = document.createElement('option');
-        opt.value = key;
-        opt.innerText = key.toUpperCase();
-        if(key === track.sample) opt.selected = true;
-        select.appendChild(opt);
-    });
-    select.addEventListener('change', (e) => {
-        track.sample = e.target.value;
-        if(players.loaded) players.player(track.sample).start();
-    });
-    header.appendChild(select);
-    row.appendChild(header);
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = 0;
+        slider.max = 127;
+        slider.value = track.velocity[i];
+        slider.className = 'velocity-slider';
 
-    // Knobs Container
-    const knobsRow = document.createElement('div');
-    knobsRow.className = 'track-knobs';
-    row.appendChild(knobsRow);
+        slider.addEventListener('input', (e) => {
+            track.velocity[i] = parseInt(e.target.value);
+            valueDisplay.textContent = Math.round(parseInt(e.target.value) / 127 * 100) + '%';
+        });
 
-    // Create Knobs
-    const stepsK = new Knob(knobsRow, 'STEPS', 1, 32, track.steps, track.colorVar, (v) => {
-        track.steps = v;
-        pulsesK.updateLimits(0, track.steps);
-        offsetK.updateLimits(0, track.steps - 1);
-        regenerateTrack(track);
+        const label = document.createElement('div');
+        label.className = 'velocity-label';
+        label.textContent = i + 1;
 
-        // --- AGGIUNTA IMPORTANTE ---
-        // Se stiamo suonando, aggiorniamo il motore audio in tempo reale
-        if(isPlaying) updateTrackScheduler(track);
-    });
+        const valueDisplay = document.createElement('div');
+        valueDisplay.className = 'velocity-value';
+        valueDisplay.textContent = Math.round(track.velocity[i] / 127 * 100) + '%';
 
-    const pulsesK = new Knob(knobsRow, 'PULSES', 0, track.steps, track.pulses, track.colorVar, (v) => {
-        track.pulses = v;
-        regenerateTrack(track);
-    });
 
-    const offsetK = new Knob(knobsRow, 'OFFSET', 0, track.steps - 1, track.offset, track.colorVar, (v) => {
-        track.offset = v;
-        regenerateTrack(track);
-    });
-
-    tracksContainer.appendChild(row);
-    regenerateTrack(track);
-  });
+        container.appendChild(slider);
+        container.appendChild(label);
+        container.appendChild(valueDisplay);
+        velocityBarsContainer.appendChild(container);
+    }
 }
 
-/* ====================================
+
+function initVelocityPanel() {
+
+    const velocityTrackSelect = document.getElementById('velocityTrackSelect');
+
+
+    // Cambio traccia nel select
+    velocityTrackSelect.addEventListener('change', (e) => {
+        currentVelocityTrack = parseInt(e.target.value);
+        renderVelocityBars();
+    });
+
+    renderVelocityBars();
+}
+
+function initInterface() {
+    const trackTitles = [
+        { label: "Sequence 1 (Outer)", color: "var(--track-1)" },
+        { label: "Sequence 2", color: "var(--track-2)" },
+        { label: "Sequence 3", color: "var(--track-3)" },
+        { label: "Sequence 4 (Inner)", color: "var(--track-4)" }
+    ];
+    tracks.forEach((track, index) => {
+        const trackContainer = document.getElementById(`track-${index}`);
+
+        // Titolo colorato
+        const header = document.createElement('div');
+        header.className = 'track-title';
+        header.textContent = trackTitles[index].label;
+        header.style.color = trackTitles[index].color;
+        trackContainer.appendChild(header);
+
+        // Steps knob row
+        const stepsRow = document.createElement('div');
+        stepsRow.className = 'knob-row';
+        stepsRow.innerHTML = `<div class="knob-label">Steps</div>`;
+        stepsRow.appendChild(document.createElement('div'));
+        trackContainer.appendChild(stepsRow);
+
+        // Pulses knob row
+        const pulsesRow = document.createElement('div');
+        pulsesRow.className = 'knob-row';
+        pulsesRow.innerHTML = `<div class="knob-label">Pulses</div>`;
+        pulsesRow.appendChild(document.createElement('div'));
+        trackContainer.appendChild(pulsesRow);
+
+        // Offset knob row
+        const offsetRow = document.createElement('div');
+        offsetRow.className = 'knob-row';
+        offsetRow.innerHTML = `<div class="knob-label">Offset</div>`;
+        offsetRow.appendChild(document.createElement('div'));
+        trackContainer.appendChild(offsetRow);
+
+        // Sound select + file input
+        const soundGroup = document.createElement('div');
+        soundGroup.className = 'standard-input-group';
+        soundGroup.style.marginTop = "10px";
+        soundGroup.innerHTML = `<label>Sound</label>`;
+        const select = document.createElement('select');
+        Object.keys(samples).forEach(key => {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.innerText = key.charAt(0).toUpperCase() + key.slice(1);
+            if (key === track.sample) opt.selected = true;
+            select.appendChild(opt);
+        });
+        soundGroup.appendChild(select);
+
+        track.userSampleOpt = null;
+
+        // File input per sample custom
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'audio/*';
+        fileInput.style.marginTop = "6px";
+        soundGroup.appendChild(fileInput);
+
+        trackContainer.appendChild(soundGroup);
+
+        // Inizializza i knob nelle rispettive righe
+        new Knob(stepsRow.lastChild, 'STEPS', 1, 32, track.steps, track.colorVar, (v) => {
+            track.steps = v;
+            pulsesK.updateLimits(0, track.steps);
+            offsetK.updateLimits(0, track.steps - 1);
+            regenerateTrack(track);
+            if (currentVelocityTrack === index) {
+                renderVelocityBars();
+            }
+        });
+        const pulsesK = new Knob(pulsesRow.lastChild, 'PULSES', 0, track.steps, track.pulses, track.colorVar, (v) => {
+            track.pulses = v;
+            regenerateTrack(track);
+        });
+        const offsetK = new Knob(offsetRow.lastChild, 'OFFSET', 0, track.steps - 1, track.offset, track.colorVar, (v) => {
+            track.offset = v;
+            regenerateTrack(track);
+        });
+
+        // Cambia sample (default o custom)
+        select.addEventListener('change', (e) => {
+            track.sample = e.target.value;
+
+            // Se è un sample custom, usa il player salvato
+            if (track.sample.startsWith('user_') && track.customPlayer) {
+                track.customPlayer.start();
+            } else if (players.loaded && players.has(track.sample)) {
+                // Altrimenti usa i sample di default
+                players.player(track.sample).start();
+            }
+        });
+        // Caricamento sample custom
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('audio/')) {
+                statusEl.textContent = "File non audio!";
+                statusEl.style.color = "#e74c3c";
+                return;
+            }
+
+            statusEl.textContent = "Loading...";
+            statusEl.style.color = "#fff";
+
+            const url = URL.createObjectURL(file);
+            const userSampleName = `user_${track.id}_${Date.now()}`;
+
+            try {
+                // Crea un nuovo Player isolato per il sample custom
+                const customPlayer = new Tone.Player(url).toDestination();
+
+                // Aspetta che il buffer sia caricato
+                await customPlayer.load(url);
+
+                // Rimuovi la vecchia option "User Sample" se esiste
+                if (track.userSampleOpt) {
+                    select.removeChild(track.userSampleOpt);
+                    track.userSampleOpt = null;
+                }
+
+                // Se c'era un player custom precedente, disconnettilo
+                if (track.customPlayer) {
+                    track.customPlayer.dispose();
+                }
+
+                // Salva il nuovo player sulla traccia
+                track.customPlayer = customPlayer;
+                track.sample = userSampleName;
+
+                // Aggiungi la nuova option "User Sample"
+                track.userSampleOpt = document.createElement('option');
+                track.userSampleOpt.value = userSampleName;
+                track.userSampleOpt.innerText = "User Sample";
+                select.appendChild(track.userSampleOpt);
+                select.value = userSampleName;
+
+                statusEl.textContent = "Sample loaded!";
+                statusEl.style.color = "#2ecc71";
+                URL.revokeObjectURL(url);
+
+            } catch (err) {
+                console.error("Errore caricamento sample:", err);
+                statusEl.textContent = "Sample load error: " + err.message;
+                statusEl.style.color = "#e74c3c";
+                URL.revokeObjectURL(url);
+            }
+        });
+        regenerateTrack(track);
+    });
+}
+/* =================================================================
    5. MATH & DRAW
-   ==================================== */
+   ================================================================= */
 function generateEuclideanPattern(steps, pulses) {
     if (pulses >= steps) return Array(steps).fill(1);
     if (pulses <= 0) return Array(steps).fill(0);
@@ -243,15 +388,30 @@ function generateEuclideanPattern(steps, pulses) {
 }
 
 function rotateArray(arr, shift) {
-  const n = arr.length;
-  if (n === 0) return arr;
-  shift = ((shift % n) + n) % n;
-  return arr.slice(-shift).concat(arr.slice(0, -shift));
+    const n = arr.length;
+    if (n === 0) return arr;
+    shift = ((shift % n) + n) % n;
+    return arr.slice(-shift).concat(arr.slice(0, -shift));
 }
 
 function regenerateTrack(track) {
     let pat = generateEuclideanPattern(track.steps, track.pulses);
     track.pattern = rotateArray(pat, track.offset);
+
+
+
+    const oldVelocity = track.velocity || [];
+    const oldLength = oldVelocity.length;
+    const newLength = track.steps;
+
+    if (newLength > oldLength) {
+        // CASO 1: Aggiungi steps → riempi i nuovi con 100 (default)
+        track.velocity = [...oldVelocity, ...new Array(newLength - oldLength).fill(100)];
+    } else if (newLength < oldLength) {
+        // CASO 2: Rimuovi steps → taglia l'array
+        track.velocity = oldVelocity.slice(0, newLength);
+    }
+
     drawAllCircles();
 }
 
@@ -276,20 +436,20 @@ function drawAllCircles() {
         for (let i = 0; i < track.steps; i++) {
             const p = polarPos(i, track.steps, track.radius);
             const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            
+
             dot.setAttribute("cx", p.x);
             dot.setAttribute("cy", p.y);
             dot.setAttribute("r", track.pattern[i] ? 6 : 3);
-            
+
             let className = "dot";
-            if(track.pattern[i]) className += ` t${tIdx}-fill`; 
-            
+            if (track.pattern[i]) className += ` t${tIdx}-fill`;
+
             dot.style.opacity = track.pattern[i] ? 0.9 : 0.3;
-            if(!track.pattern[i]) dot.style.fill = "#444";
-            
+            if (!track.pattern[i]) dot.style.fill = "#444";
+
             dot.setAttribute("class", className);
             dot.id = `dot-${tIdx}-${i}`;
-            
+
             // Manual Toggle
             dot.onclick = () => {
                 track.pattern[i] = track.pattern[i] ? 0 : 1;
@@ -300,142 +460,130 @@ function drawAllCircles() {
         }
     });
 }
-
 /* =================================================================
-   6. POLY-SEQUENCER ENGINE (TONE.TRANSPORT EVENT BASED)
+   6. POLY-SEQUENCER ENGINE (MCM & CLOCK GLOBALE) - VERSIONE Tone.Transport
    ================================================================= */
+let globalStep = 0;
+let transportEventId = null;
 
-// Funzione Core: Schedula (o ri-schedula) una singola traccia
-function updateTrackScheduler(track) {
-    // 1. Pulizia: Se c'era già un loop programmato per questa traccia, cancellalo.
-    // Questo è fondamentale quando giri la manopola Steps mentre suona.
-    if (track.eventId !== null) {
-        Tone.Transport.clear(track.eventId);
-        track.eventId = null;
-    }
+// Funzione principale chiamata dal clock di Tone.Transport
+function playStep(time) {
+    // Calcola la risoluzione globale (MCM)
+    const stepsPerBar = tracks.reduce((acc, t) => lcm(acc, t.steps), 1);
 
-    // Se il sequencer è fermo, non scheduliamo nulla (lo farà startSequencer)
-    // Ma se stiamo suonando e cambiamo manopola, dobbiamo rischedulare al volo.
-    // Per semplicità, qui configuriamo solo l'evento, Tone lo gestirà se Transport è 'started'.
-    
-    // 2. Calcolo Intervallo Matematico
-    // "1m" indica 1 misura (4 quarti). Dividiamo per il numero di step.
-    // Tone.Time("1m").toSeconds() ci dà la durata in secondi a BPM attuali, diviso gli step.
-    // Usiamo una funzione callback per ricalcolarlo dinamicamente se i BPM cambiano? 
-    // No, meglio passare un valore tempo relativo.
-    // Tone.js supporta la stringa "1m / 16" ma per sicurezza usiamo i secondi relativi.
-    
-    const interval = Tone.Time("1m").toSeconds() / track.steps;
+    tracks.forEach((track, tIdx) => {
+        const division = stepsPerBar / track.steps;
+        if (globalStep % division === 0) {
+            const stepIdx = (globalStep / division) % track.steps;
+            track.playingIdx = stepIdx;
 
-    // 3. Creazione Loop
-    // scheduleRepeat esegue la callback ogni 'interval' secondi esatti.
-    track.eventId = Tone.Transport.scheduleRepeat((time) => {
-        // A. Logica Step: Avanziamo di 1
-        track.currentStep = (track.currentStep + 1) % track.steps;
-        track.playingIdx = track.currentStep;
-
-        // B. Audio: Usiamo 'time' per la precisione assoluta (zero jitter)
-        const stepIdx = track.currentStep;
-        if (track.pattern[stepIdx] === 1) {
-            if (players.loaded && players.has(track.sample)) {
-                players.player(track.sample).start(time);
-            }
-        }
-
-        // C. Visuals: Tone.Draw sincronizza la UI con l'audio (che è leggermente nel futuro)
-        Tone.Draw.schedule(() => {
-            // Spegni precedenti
-            for(let i = 0; i < track.steps; i++) {
+            // Visuals
+            for (let i = 0; i < track.steps; i++) {
                 const d = document.getElementById(`dot-${track.id}-${i}`);
-                if(d) d.classList.remove('playing');
+                if (d) d.classList.remove('playing');
             }
-            // Accendi corrente
             const currentDot = document.getElementById(`dot-${track.id}-${stepIdx}`);
-            if(currentDot) {
+            if (currentDot) {
                 currentDot.classList.add('playing');
-                if(track.pattern[stepIdx]) {
+                if (track.pattern[stepIdx]) {
                     currentDot.style.r = 9;
                     setTimeout(() => currentDot.style.r = 6, 80);
                 }
             }
-        }, time);
 
-    }, interval);
-}
+            // Audio Trigger (usando il tempo fornito da Tone.Transport)
+            if (track.pattern[stepIdx] === 1) {
+                const velocity = track.velocity[stepIdx] / 127; // Normalizza da 0-127 a 0-1
 
-// Funzione BPM Listener
-const bpmInput = document.getElementById('bpm');
-bpmInput.addEventListener('input', (e) => {
-    const val = parseInt(e.target.value) || 120;
-    Tone.Transport.bpm.value = val;
-    // Quando cambiano i BPM, bisogna rischedulare perché l'intervallo in secondi cambia?
-    // Tone.Transport scala automaticamente se usiamo notazione musicale, 
-    // ma qui abbiamo calcolato in secondi fissi all'istante della creazione.
-    // Per robustezza, rigeneriamo gli scheduler al cambio BPM o Steps.
-    if(isPlaying) tracks.forEach(t => updateTrackScheduler(t));
-});
-
-async function startSequencer() {
-    if(isPlaying) return;
-    await Tone.start(); // Necessario per browser policy
-    
-    // Reset stato
-    tracks.forEach(t => {
-        t.currentStep = -1; 
-        // Generiamo lo scheduler per ogni traccia
-        updateTrackScheduler(t);
+                // Se è un sample custom, usa il player salvato
+                if (track.sample.startsWith('user_') && track.customPlayer) {
+                    track.customPlayer.volume.value = Tone.gainToDb(velocity);
+                    track.customPlayer.start(time);
+                }
+                // Altrimenti usa i sample di default
+                else if (players.loaded && players.has(track.sample)) {
+                    const player = players.player(track.sample);
+                    player.volume.value = Tone.gainToDb(velocity);
+                    player.start(time);
+                }
+            }
+        }
     });
 
-    // Imposta BPM iniziali
-    Tone.Transport.bpm.value = parseInt(bpmInput.value) || 120;
-    
-    // START
-    Tone.Transport.start();
+    // Avanza step
+    globalStep = (globalStep + 1) % stepsPerBar;
+}
+
+// Funzioni per MCM
+function gcd(a, b) {
+    return b === 0 ? a : gcd(b, a % b);
+}
+function lcm(a, b) {
+    return (a * b) / gcd(a, b);
+}
+async function startSequencer() {
+    if (isPlaying) return;
+    await Tone.start();
     isPlaying = true;
-    
     startBtn.style.background = "#222";
     startBtn.style.color = "#888";
+    globalStep = 0;
+
+    // Imposta BPM
+    const bpm = parseInt(document.getElementById('bpm').value) || 120;
+    Tone.Transport.bpm.value = bpm;
+
+    // Calcola steps per bar (MCM)
+    const stepsPerBar = tracks.reduce((acc, t) => lcm(acc, t.steps), 1);
+
+    // Imposta la risoluzione dei tick del Transport (PPQ = stepsPerBar * 4)
+    Tone.Transport.PPQ = stepsPerBar;
+
+    // Rimuovi eventuali eventi precedenti
+    if (transportEventId !== null) {
+        Tone.Transport.clear(transportEventId);
+    }
+
+    // Schedula playStep ogni 4 tick ("4i" = ogni step)
+    transportEventId = Tone.Transport.scheduleRepeat(playStep, "4i");
+
+    Tone.Transport.start("+0.05");
 }
 
 function stopSequencer() {
-    // STOP
-    Tone.Transport.stop();
-    // Cancelliamo tutti gli eventi schedulati per pulizia
-    Tone.Transport.cancel();
-    tracks.forEach(t => t.eventId = null);
-    
     isPlaying = false;
     startBtn.style.background = "#2ecc71";
     startBtn.style.color = "#000";
-    
-    // Reset Visuals
-    tracks.forEach(track => {
-        track.playingIdx = -1;
-    });
+    if (transportEventId !== null) {
+        Tone.Transport.clear(transportEventId);
+        transportEventId = null;
+    }
+    Tone.Transport.stop();
+    globalStep = 0;
+    tracks.forEach(track => track.playingIdx = -1);
     document.querySelectorAll('.dot').forEach(d => d.classList.remove('playing'));
+    drawAllCircles();
 }
 
 // Bindings
 startBtn.onclick = startSequencer;
 document.getElementById('stopBtn').onclick = stopSequencer;
 
-
-
-/* ===========================
-   7. MIDI EXPORT ENGINE
-   ===========================*/
+/* =================================================================
+   7. MIDI EXPORT ENGINE (ENGINEERING GRADE v2.0)
+   ================================================================= */
 
 const exportBtn = document.getElementById('exportBtn');
 
 function downloadMIDI() {
-    // SECURITY CHECK: Verify library loading
+    // SECURITY CHECK: Verifica caricamento libreria
     if (typeof MidiWriter === 'undefined') {
         alert("Errore critico: Libreria MidiWriter non caricata. Controlla la connessione o il link CDN.");
         return;
     }
 
-    // CONFIGURATION
-    // Instruments mapping (GM Standard Channel 10)
+    // CONFIGURAZIONE
+    // Mapping strumenti (GM Standard Channel 10)
     const midiMap = {
         kick: 36,  // C1
         snare: 38, // D1
@@ -443,101 +591,103 @@ function downloadMIDI() {
         tom: 47    // B1
     };
 
-    // Time constants
+    // Costanti temporali
     const PPQ = 128; // Standard MIDI resolution
     const TICKS_PER_BAR = PPQ * 4; // 512 Ticks per 4/4
-    const BARS_TO_EXPORT = 4; // Loop Lenght
+    const BARS_TO_EXPORT = 4; // Lunghezza Loop
 
-    // Inizialization of MIDI tracks
+    // Inizializzazione Tracce MIDI
     const midiTracks = [];
 
-    // TRACKS ITERATION
-    // we use the global array 'tracks' defined at the section 2
+    // ITERAZIONE TRACCE
+    // Usa l'array globale 'tracks' definito nella sezione 2
     tracks.forEach(t => {
         const track = new MidiWriter.Track();
-        
-        // Track's Metadata
+
+        // Metadata Traccia
         track.addTrackName(`Track ${t.id + 1} - ${t.sample.toUpperCase()}`);
-        
-        // parameters for the calculus
-        const noteNumber = midiMap[t.sample] || 36; //Kick fallback if undefined
+
+        // Parametri per il calcolo
+        const noteNumber = midiMap[t.sample] || 36; // Fallback a Kick se undefined
         const totalStepsToExport = t.steps * BARS_TO_EXPORT;
-        
-        // WAITING BUFFER ( Delta-Time accumulator)
-        // It handles silences by accumulating the duration of empty steps
-        // to apply them as a delay (wait) to the next active note.
+
+        // BUFFER DI ATTESA (Accumulatore Delta-Time)
+        // Gestisce i silenzi accumulando la durata degli step vuoti
+        // per applicarli come ritardo (wait) alla prima nota attiva successiva.
         let waitBuffer = 0;
 
         for (let i = 0; i < totalStepsToExport; i++) {
-            // 1. Euclidean Pattern Logic 
+            // 1. Logica Pattern (Rotazione + Euclideo)
             const patternIdx = i % t.steps;
             const isActive = t.pattern[patternIdx] === 1;
 
-            // 2. Precise Timing Calculation (with Floating Point Compensation)
-            // We calculate the absolute start and end ticks for this specific step.
-            // Difference = Exact Duration (integer) which compensates for rounding.
-            const absStartBar = i / t.steps; 
+            // 2. Calcolo Temporale di Precisione (Floating Point Compensation)
+            // Calcoliamo i tick assoluti di inizio e fine per questo step specifico
+            // Differenza = Durata esatta (intero) che compensa gli arrotondamenti
+            const absStartBar = i / t.steps;
             const absEndBar = (i + 1) / t.steps;
-            
+
             const tickStart = Math.round(absStartBar * TICKS_PER_BAR);
             const tickEnd = Math.round(absEndBar * TICKS_PER_BAR);
-            
+
             const currentStepDuration = tickEnd - tickStart;
 
-            // 3. Events transcripting
+            // 3. Scrittura Eventi
             if (isActive) {
-                // ON note
+                // NOTA ON
                 track.addEvent(new MidiWriter.NoteEvent({
                     pitch: [noteNumber],
-                    duration: 'T' + currentStepDuration,
-                    wait: 'T' + waitBuffer,              
+                    duration: 'T' + currentStepDuration, // Durata nota piena (Legato)
+                    wait: 'T' + waitBuffer,              // Applica il ritardo accumulato
                     channel: 10,
                     velocity: 100
                 }));
-                
-                // Buffer reset after the wait
+
+                // Reset buffer dopo aver "speso" l'attesa
                 waitBuffer = 0;
             } else {
-                // OFF note means pause (export shortcut)
-                // we accumulate time writing anything on the midi
+                // NOTA OFF (Pausa)
+                // Non scriviamo nulla sul MIDI, accumuliamo solo il tempo
                 waitBuffer += currentStepDuration;
             }
         }
-        
+
         midiTracks.push(track);
     });
 
-    // FILE GENERATION
+    // GENERAZIONE FILE
     try {
         const writer = new MidiWriter.Writer(midiTracks);
-        const blob = new Blob([writer.buildFile()], {type: "audio/midi"});
-        
-        // Forced download
+        const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
+
+        // Download forzato
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'euclidean_poly_rhythm.mid';
         document.body.appendChild(a);
         a.click();
-        
+
         // Garbage collection
         document.body.removeChild(a);
         URL.revokeObjectURL(a.href);
-        
+
     } catch (e) {
         console.error("Errore durante la scrittura del file MIDI:", e);
         alert("Errore nella generazione del file MIDI. Vedi console.");
     }
 }
 
-// export button BINDINGS
-// replaceChild guarantees there are no duplicated listeners (safe-mode)
-if(exportBtn) {
+// BINDING PULSANTE
+// Usa replaceChild per garantire che non ci siano listener duplicati (safe-mode)
+if (exportBtn) {
     const newBtn = exportBtn.cloneNode(true);
-    if(exportBtn.parentNode) {
+    if (exportBtn.parentNode) {
         exportBtn.parentNode.replaceChild(newBtn, exportBtn);
         newBtn.addEventListener('click', downloadMIDI);
     }
 }
 
 // Init
+
 initInterface();
+initVelocityPanel();
