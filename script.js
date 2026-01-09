@@ -755,13 +755,17 @@ function downloadMIDI() {
 
             // 3. Scrittura Eventi
             if (isActive) {
+
+                // per assicurarsi che sia un intero valido, fallback a 100
+                const currentVelocity = t.velocity[patternIdx] || 100;
+
                 // NOTA ON
                 track.addEvent(new MidiWriter.NoteEvent({
                     pitch: [noteNumber],
                     duration: 'T' + currentStepDuration, // Durata nota piena (Legato)
                     wait: 'T' + waitBuffer,              // Applica il ritardo accumulato
                     channel: 10,
-                    velocity: 100
+                    velocity: currentVelocity // <--- ASSEGNAZIONE VELOCITY DINAMICA
                 }));
 
                 // Reset buffer dopo aver "speso" l'attesa
