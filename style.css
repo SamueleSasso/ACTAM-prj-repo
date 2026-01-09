@@ -230,8 +230,48 @@ body {
   cursor: pointer;
 }
 
-.velocity-label,
+/* Rendi visibile il numero (0-127) */
 .velocity-value {
+  display: block;
+  /* Fondamentale: rende visibile il testo */
+  font-family: monospace;
+  font-size: 10px;
+  color: #888;
+  margin-top: 10px;
+  text-align: center;
+  width: 100%;
+  pointer-events: none;
+  /* Evita interferenze col mouse */
+}
+
+/* Stile del pallino (Thumb) */
+.velocity-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+
+  /* Dimensioni pallino */
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  /*box-shadow: 0 1px 4px rgba(0,0,0,0.5);*/
+  margin-top: -6px;
+  /* Centratura verticale */
+}
+
+/* Compatibilità Firefox */
+.velocity-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+.velocity-label {
   display: none;
 }
 
@@ -277,8 +317,7 @@ body {
   border: 1px solid #222;
   border-radius: 20px;
   /* Slight rounding for the box */
-  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
-  /* Inner shadow for depth */
+  /*box-shadow: inset 0 0 50px rgba(0,0,0,0.8);  Inner shadow for depth */
 }
 
 svg {
