@@ -15,15 +15,6 @@ const samples = {
     tom: "https://tonejs.github.io/audio/drum-samples/CR78/tom1.mp3",
 };
 
-// Creiamo i player
-const players = new Tone.Players(samples, {
-    onload: () => {
-        statusEl.textContent = "AUDIO READY";
-        statusEl.style.color = "#2ecc71";
-        console.log("Audio buffers loaded!");
-    }
-}).connect(masterPanner);
-
 // Timeout di sicurezza
 setTimeout(() => {
     if (!players.loaded) {
@@ -31,6 +22,7 @@ setTimeout(() => {
         statusEl.style.color = "#e67e22";
     }
 }, 3000);
+
 
 /* =================================================================
    2. APP STATE
@@ -45,6 +37,41 @@ tracks.forEach(track => {
     track.velocity = new Array(track.steps).fill(100); // Inizializza velocity a 100 per ogni step
 });
 
+
+// Add gain nodes for each track
+tracks.forEach(track => {
+    track.gainNode = new Tone.Gain(1).connect(masterPanner);
+});
+
+
+// Creiamo i player
+const players = new Tone.Players(samples, {
+    onload: () => {
+        statusEl.textContent = "AUDIO READY";
+        statusEl.style.color = "#2ecc71";
+        console.log("Audio buffers loaded!");
+    }
+});
+
+// Player pool for overlapping playback
+const playerPools = {};
+Object.keys(samples).forEach(sampleKey => {
+    playerPools[sampleKey] = [];
+    for (let i = 0; i < 4; i++) { // Pool size 4, adjust as needed
+        const p = new Tone.Player(samples[sampleKey]).connect(masterPanner);
+        playerPools[sampleKey].push(p);
+    }
+});
+
+// Connect each player to its track's gain node
+Object.keys(samples).forEach((sampleKey, idx) => {
+    if (players.has(sampleKey) && tracks[idx]) {
+        players.player(sampleKey).connect(tracks[idx].gainNode);
+    }
+});
+
+
+
 let currentVelocityTrack = 0; // Traccia selezionata nel velocity panel
 let isPlaying = false;
 
@@ -52,12 +79,13 @@ let isPlaying = false;
    3. KNOB CLASS
    ================================================================= */
 class Knob {
-    constructor(container, label, min, max, initialValue, colorVar, callback) {
+    constructor(container, label, min, max, initialValue, colorVar, callback, step = 1) {
         this.container = container;
         this.min = min;
         this.max = max;
         this.value = initialValue;
         this.callback = callback;
+        this.step = step;
 
         // UI Config
         this.minAngle = -135;
@@ -111,12 +139,17 @@ class Knob {
 
             const deltaY = this.startY - e.clientY;
             const range = this.max - this.min;
-
             const pixelsForFullRotation = 300;
             const valuePerPixel = range / pixelsForFullRotation;
-
             const valueChange = deltaY * valuePerPixel;
-            let newValue = Math.round(this.startValue + valueChange);
+            let newValue = this.startValue + valueChange;
+
+            // Snap to step
+            if (this.step === 1) {
+                newValue = Math.round(newValue);
+            } else {
+                newValue = Math.round(newValue / this.step) * this.step;
+            }
 
             this.setValue(newValue);
         });
@@ -143,7 +176,7 @@ class Knob {
 
         const angle = this.minAngle + (percent * angleRange);
         this.indicatorEl.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-        this.displayEl.textContent = this.value;
+        this.displayEl.textContent = (this.step === 1) ? this.value : this.value.toFixed(2);
     }
 }
 
@@ -241,6 +274,18 @@ function initInterface() {
         offsetRow.appendChild(document.createElement('div'));
         trackContainer.appendChild(offsetRow);
 
+        // Gain knob row
+        const gainRow = document.createElement('div');
+        gainRow.className = 'knob-row';
+        gainRow.innerHTML = `<div class="knob-label">Gain</div>`;
+        gainRow.appendChild(document.createElement('div'));
+        trackContainer.appendChild(gainRow);
+
+        // Gain knob (0 to 2, default 1, step 0.01)
+        new Knob(gainRow.lastChild, 'GAIN', 0, 2, 1, track.colorVar, (v) => {
+            track.gainNode.gain.value = v;
+        }, 0.01);
+
         // Sound select + file input
         const soundGroup = document.createElement('div');
         soundGroup.className = 'standard-input-group';
@@ -316,7 +361,7 @@ function initInterface() {
 
             try {
                 // Crea un nuovo Player isolato per il sample custom
-                const customPlayer = new Tone.Player(url).toDestination();
+                const customPlayer = new Tone.Player(url).connect(track.gainNode);
 
                 // Aspetta che il buffer sia caricato
                 await customPlayer.load(url);
@@ -502,9 +547,26 @@ function playStep(time) {
                 }
                 // Altrimenti usa i sample di default
                 else if (players.loaded && players.has(track.sample)) {
-                    const player = players.player(track.sample);
-                    player.volume.value = Tone.gainToDb(velocity);
-                    player.start(time);
+                    // Use a player from the pool for overlapping playback
+                    const pool = playerPools[track.sample];
+                    if (pool) {
+                        // Find a player that's not currently playing
+                        let found = false;
+                        for (let i = 0; i < pool.length; i++) {
+                            const p = pool[i];
+                            if (!p.state || p.state === "stopped") {
+                                p.volume.value = Tone.gainToDb(velocity);
+                                p.start(time);
+                                found = true;
+                                break;
+                            }
+                        }
+                        // If all are busy, force the first one to play (may cut off previous sound)
+                        if (!found) {
+                            pool[0].volume.value = Tone.gainToDb(velocity);
+                            pool[0].start(time);
+                        }
+                    }
                 }
             }
         }
@@ -551,6 +613,19 @@ async function startSequencer() {
 }
 
 function stopSequencer() {
+    // stop sound from all players
+    Object.keys(samples).forEach(sampleKey => {
+        if (players.has(sampleKey)) {
+            players.player(sampleKey).stop();
+        }
+    });
+    tracks.forEach(track => {
+        if (track.customPlayer) {
+            track.customPlayer.stop();
+        }
+    });
+
+
     isPlaying = false;
     startBtn.style.background = "#2ecc71";
     startBtn.style.color = "#000";

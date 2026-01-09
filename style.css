@@ -47,8 +47,8 @@ body {
 .left-section {
   display: flex;
   flex-direction: column;
-  justify-content: center; 
-  gap: 25px; 
+  justify-content: center;
+  gap: 25px;
   height: 100%;
 }
 
@@ -68,7 +68,7 @@ body {
   padding: 20px 15px;
   border-radius: 12px;
   border: 1px solid #222;
-  min-height: 40vh; 
+  min-height: 40vh;
 }
 
 .track-title {
@@ -142,7 +142,9 @@ body {
   color: var(--track-2);
 }
 
-.label-display { display: none; }
+.label-display {
+  display: none;
+}
 
 .standard-input-group label {
   display: block;
@@ -167,14 +169,14 @@ body {
 
 /* ===== VELOCITY PANEL ===== */
 .velocity-panel {
-  width: 765px; 
-  max-width: none; 
+  width: 765px;
+  max-width: none;
   box-sizing: border-box;
   background: #0e0e11;
   padding: 15px;
   border-radius: 12px;
   border: 1px solid #222;
-  margin: 0; 
+  margin: 0;
 }
 
 .velocity-header {
@@ -201,7 +203,7 @@ body {
   display: flex;
   gap: 6px;
   align-items: flex-end;
-  height: 12vh; 
+  height: 12vh;
   background: #111217;
   padding: 10px;
   border-radius: 8px;
@@ -228,12 +230,26 @@ body {
   cursor: pointer;
 }
 
-.velocity-label, .velocity-value { display: none; }
+.velocity-label,
+.velocity-value {
+  display: none;
+}
 
-.velocity-bar-container.track-0 .velocity-slider { accent-color: var(--track-1); }
-.velocity-bar-container.track-1 .velocity-slider { accent-color: var(--track-2); }
-.velocity-bar-container.track-2 .velocity-slider { accent-color: var(--track-3); }
-.velocity-bar-container.track-3 .velocity-slider { accent-color: var(--track-4); }
+.velocity-bar-container.track-0 .velocity-slider {
+  accent-color: var(--track-1);
+}
+
+.velocity-bar-container.track-1 .velocity-slider {
+  accent-color: var(--track-2);
+}
+
+.velocity-bar-container.track-2 .velocity-slider {
+  accent-color: var(--track-3);
+}
+
+.velocity-bar-container.track-3 .velocity-slider {
+  accent-color: var(--track-4);
+}
 
 
 /* ===== RIGHT SECTION ===== */
@@ -242,7 +258,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0; /* Gap reduced to 0, relying on negative margins */
+  gap: 0;
+  /* Gap reduced to 0, relying on negative margins */
   height: 100%;
   padding: 0;
   box-sizing: border-box;
@@ -254,12 +271,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   /* CHANGED: Black Box for contrast */
-  background: #000;
+  background: #0e0e11;
   border: 1px solid #222;
-  border-radius: 20px; /* Slight rounding for the box */
-  box-shadow: inset 0 0 50px rgba(0,0,0,0.8); /* Inner shadow for depth */
+  border-radius: 20px;
+  /* Slight rounding for the box */
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
+  /* Inner shadow for depth */
 }
 
 svg {
@@ -273,10 +292,11 @@ svg {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  
+
   /* CHANGED: Negative margin pulls buttons up into the SVG's empty space */
-  margin-top: -30px; 
-  z-index: 10; /* Ensures buttons are clickable if they overlap slightly */
+  margin-top: -30px;
+  z-index: 10;
+  /* Ensures buttons are clickable if they overlap slightly */
 }
 
 .buttons-row {
@@ -294,29 +314,64 @@ button {
   font-weight: bold;
   font-size: 15px;
   text-transform: uppercase;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
-button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-#startBtn { background: #2ecc71; color: #000; }
-#stopBtn { background: #e74c3c; color: #fff; }
-#exportBtn { background: #3498db; color: #fff; }
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+#startBtn {
+  background: #2ecc71;
+  color: #000;
+}
+
+#stopBtn {
+  background: #e74c3c;
+  color: #fff;
+}
+
+#exportBtn {
+  background: #3498db;
+  color: #fff;
+}
 
 .status-msg {
   text-align: center;
   font-size: 13px;
   color: #666;
-  height: 20px; 
+  height: 20px;
 }
 
-.guide { 
-  fill: none; 
-  stroke: rgba(255, 255, 255, 0.15); 
+.guide {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.15);
 }
 
-.dot { opacity: 0.28; transition: opacity 0.12s ease; cursor: pointer; }
-.dot.playing { opacity: 1 !important; filter: drop-shadow(0 0 12px currentColor); }
-.t0-fill { fill: var(--track-1); }
-.t1-fill { fill: var(--track-2); }
-.t2-fill { fill: var(--track-3); }
-.t3-fill { fill: var(--track-4); }
+.dot {
+  opacity: 0.28;
+  transition: opacity 0.12s ease;
+  cursor: pointer;
+}
+
+.dot.playing {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 12px currentColor);
+}
+
+.t0-fill {
+  fill: var(--track-1);
+}
+
+.t1-fill {
+  fill: var(--track-2);
+}
+
+.t2-fill {
+  fill: var(--track-3);
+}
+
+.t3-fill {
+  fill: var(--track-4);
+}
