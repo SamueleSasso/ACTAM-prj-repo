@@ -817,11 +817,10 @@ const cycleBtns = document.querySelectorAll('.cycle-btn');
 let exportSettings = {
     velocity: true,
     merge: false,
-    cycles: 1
+    selectedTracks: [0, 1, 2, 3] // Default: tutte le tracce (ID 0-3)
 };
 
 // 1. GESTIONE APERTURA (Tasto Export Principale)
-// Rimuoviamo il listener diretto a downloadMIDI e apriamo la modale
 if (exportBtn) {
     const newBtn = exportBtn.cloneNode(true);
     if (exportBtn.parentNode) {
@@ -832,39 +831,45 @@ if (exportBtn) {
     }
 }
 
-// 2. GESTIONE CHIUSURA (Click fuori dalla finestra)
+// 2. GESTIONE CHIUSURA
 modalOverlay.addEventListener('click', (e) => {
-    // Se clicco esattamente sull'overlay (lo sfondo scuro) e non sul contenuto
     if (e.target === modalOverlay) {
         modalOverlay.classList.add('hidden');
     }
 });
 
-// 3. GESTIONE SELETTORE CICLI (1-4)
+// 3. GESTIONE SELETTORE TRACCE (Multi-Select)
 cycleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        // Rimuovi classe active da tutti
-        cycleBtns.forEach(b => b.classList.remove('active'));
-        // Aggiungi a quello cliccato
-        btn.classList.add('active');
-        // Aggiorna stato
-        exportSettings.cycles = parseInt(btn.getAttribute('data-val'));
+        btn.classList.toggle('active'); // Toggle visuale
+        
+        const val = parseInt(btn.getAttribute('data-val'));
+        const trackId = val - 1; 
+
+        if (btn.classList.contains('active')) {
+            // Aggiungi trackId se manca
+            if (!exportSettings.selectedTracks.includes(trackId)) {
+                exportSettings.selectedTracks.push(trackId);
+            }
+        } else {
+            // Rimuovi trackId se presente
+            exportSettings.selectedTracks = exportSettings.selectedTracks.filter(id => id !== trackId);
+        }
+        
+        exportSettings.selectedTracks.sort((a, b) => a - b);
+        console.log("Selected Tracks:", exportSettings.selectedTracks);
     });
 });
 
-// 4. GESTIONE CONFERMA DOWNLOAD
+// 4. GESTIONE CONFERMA
 confirmExportBtn.addEventListener('click', () => {
-    // Aggiorna gli altri setting dai checkbox
     exportSettings.velocity = document.getElementById('optVelocity').checked;
     exportSettings.merge = document.getElementById('optMerge').checked;
-    
-    // Debug temporaneo per verificare che funzioni
-    console.log("Esportazione avviata con settings:", exportSettings);
     
     // Chiudi modale
     modalOverlay.classList.add('hidden');
     
-    // Lancia la vecchia funzione (che aggiorneremo dopo per usare i settings)
+    // Avvia export (la logica interna verrà aggiornata successivamente)
     downloadMIDI(); 
 });
 
