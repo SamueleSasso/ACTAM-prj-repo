@@ -153,19 +153,17 @@ class Knob {
 const velocityBarsContainer = document.getElementById('velocityBars');
 
 function renderVelocityBars() {
-    // Riferimento alla traccia corrente
     const track = tracks[currentVelocityTrack];
-    
-    // Pulizia del container
     velocityBarsContainer.innerHTML = '';
 
+    // Controllo di sicurezza: se la traccia non ha pattern generato (es. init), evita errori
+    if (!track.pattern || track.pattern.length === 0) return;
+
     for (let i = 0; i < track.steps; i++) {
-        // Creazione Container
         const container = document.createElement('div');
         container.className = `velocity-bar-container track-${currentVelocityTrack}`;
         container.setAttribute('data-step', i);
 
-        // 1. Lo Slider (Input Range)
         const slider = document.createElement('input');
         slider.type = 'range';
         slider.min = 0;
@@ -173,45 +171,47 @@ function renderVelocityBars() {
         slider.value = track.velocity[i];
         slider.className = 'velocity-slider';
 
-        // 2. Il Valore Numerico
-        // Usiamo la classe esistente 'velocity-value'
+        slider.addEventListener('dblclick', () => {
+            track.velocity[i] = 100; // Reset logico
+            slider.value = 100;      // Reset visivo
+            
+            // Aggiorna il testo della percentuale
+            const valDisplay = container.querySelector('.velocity-value');
+            if (valDisplay) valDisplay.textContent = track.velocity[i];
+        });
+
+        // --- MODIFICA RICHIESTA: Gestione stato attivo/inattivo ---
+        // Se il pulse in questo step è 0 (assente), aggiungiamo la classe inattiva
+        if (track.pattern[i] === 0) {
+            slider.classList.add('inactive-slider');
+        }
+        // ----------------------------------------------------------
+
+        slider.addEventListener('input', (e) => {
+            track.velocity[i] = parseInt(e.target.value);
+            // Aggiorna il display del valore solo per questo slider
+            const valDisplay = container.querySelector('.velocity-value');
+            if(valDisplay) valDisplay.textContent = track.velocity[i];
+        });
+
+        const label = document.createElement('div');
+        label.className = 'velocity-label';
+        label.textContent = i + 1;
+
         const valueDisplay = document.createElement('div');
         valueDisplay.className = 'velocity-value';
-        
-        // --- MODIFICA RICHIESTA: Valore puro (0-127) invece della percentuale ---
         valueDisplay.textContent = track.velocity[i];
 
-        // --- EVENTO: Cambio valore (trascinamento) ---
-        slider.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            // Aggiorna il dato nella struttura dati
-            track.velocity[i] = val;
-            // Aggiorna il testo visualizzato (0-127)
-            valueDisplay.textContent = val;
-        });
-
-        // --- EVENTO: Doppio Click (Reset a 100) ---
-        slider.addEventListener('dblclick', () => {
-            const defaultVal = 100; // Valore standard MIDI velocity
-            
-            // Reset dato, slider e testo
-            track.velocity[i] = defaultVal;
-            slider.value = defaultVal;
-            valueDisplay.textContent = defaultVal;
-        });
-
-        // Assemblaggio nel DOM
         container.appendChild(slider);
+        container.appendChild(label);
         container.appendChild(valueDisplay);
         velocityBarsContainer.appendChild(container);
     }
 }
 
-/*
 function initVelocityPanel() {
 
     const velocityTrackSelect = document.getElementById('velocityTrackSelect');
-
 
     // Cambio traccia nel select
     velocityTrackSelect.addEventListener('change', (e) => {
@@ -222,7 +222,6 @@ function initVelocityPanel() {
     renderVelocityBars();
 }
 
-*/
 
 /* =================================================================
    LOGICA VELOCITY PAINTING (Minimal & Functional)
@@ -388,10 +387,18 @@ function initInterface() {
         const pulsesK = new Knob(pulsesRow.lastChild, 'PULSES', 0, track.steps, track.pulses, track.colorVar, (v) => {
             track.pulses = v;
             regenerateTrack(track);
+
+            if (currentVelocityTrack === index) { //update 
+                renderVelocityBars();
+            }
         });
         const offsetK = new Knob(offsetRow.lastChild, 'OFFSET', 0, track.steps - 1, track.offset, track.colorVar, (v) => {
             track.offset = v;
             regenerateTrack(track);
+
+            if (currentVelocityTrack === index) { //update
+                renderVelocityBars();
+            }
         });
 
         // Cambia sample (default o custom)
@@ -562,6 +569,12 @@ function drawAllCircles() {
             dot.onclick = () => {
                 track.pattern[i] = track.pattern[i] ? 0 : 1;
                 drawAllCircles();
+
+                // Se stiamo modificando la traccia attualmente selezionata nel pannello Velocity,
+                // dobbiamo aggiornare le barre per riflettere il cambio di stato (colore/grigio).
+                if (tIdx === currentVelocityTrack) {
+                    renderVelocityBars();
+                }
             };
 
             tracksGroup.appendChild(dot);
