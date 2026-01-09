@@ -151,15 +151,21 @@ class Knob {
    4. UI GENERATION
    ================================================================= */
 const velocityBarsContainer = document.getElementById('velocityBars');
+
 function renderVelocityBars() {
+    // Riferimento alla traccia corrente
     const track = tracks[currentVelocityTrack];
+    
+    // Pulizia del container
     velocityBarsContainer.innerHTML = '';
 
     for (let i = 0; i < track.steps; i++) {
+        // Creazione Container
         const container = document.createElement('div');
         container.className = `velocity-bar-container track-${currentVelocityTrack}`;
         container.setAttribute('data-step', i);
 
+        // 1. Lo Slider (Input Range)
         const slider = document.createElement('input');
         slider.type = 'range';
         slider.min = 0;
@@ -167,28 +173,41 @@ function renderVelocityBars() {
         slider.value = track.velocity[i];
         slider.className = 'velocity-slider';
 
-        slider.addEventListener('input', (e) => {
-            track.velocity[i] = parseInt(e.target.value);
-            valueDisplay.textContent = Math.round(parseInt(e.target.value) / 127 * 100) + '%';
-        });
-
-        const label = document.createElement('div');
-        label.className = 'velocity-label';
-        label.textContent = i + 1;
-
+        // 2. Il Valore Numerico
+        // Usiamo la classe esistente 'velocity-value'
         const valueDisplay = document.createElement('div');
         valueDisplay.className = 'velocity-value';
-        valueDisplay.textContent = Math.round(track.velocity[i] / 127 * 100) + '%';
+        
+        // --- MODIFICA RICHIESTA: Valore puro (0-127) invece della percentuale ---
+        valueDisplay.textContent = track.velocity[i];
 
+        // --- EVENTO: Cambio valore (trascinamento) ---
+        slider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            // Aggiorna il dato nella struttura dati
+            track.velocity[i] = val;
+            // Aggiorna il testo visualizzato (0-127)
+            valueDisplay.textContent = val;
+        });
 
+        // --- EVENTO: Doppio Click (Reset a 100) ---
+        slider.addEventListener('dblclick', () => {
+            const defaultVal = 100; // Valore standard MIDI velocity
+            
+            // Reset dato, slider e testo
+            track.velocity[i] = defaultVal;
+            slider.value = defaultVal;
+            valueDisplay.textContent = defaultVal;
+        });
+
+        // Assemblaggio nel DOM
         container.appendChild(slider);
-        container.appendChild(label);
         container.appendChild(valueDisplay);
         velocityBarsContainer.appendChild(container);
     }
 }
 
-
+/*
 function initVelocityPanel() {
 
     const velocityTrackSelect = document.getElementById('velocityTrackSelect');
@@ -200,6 +219,95 @@ function initVelocityPanel() {
         renderVelocityBars();
     });
 
+    renderVelocityBars();
+}
+
+*/
+
+/* =================================================================
+   LOGICA VELOCITY PAINTING (Minimal & Functional)
+   ================================================================= */
+
+let isDrawingVelocity = false;
+
+// Funzione di calcolo: trasforma la posizione X/Y del mouse in Step/Velocity
+function updateVelocityFromPointer(e) {
+    const track = tracks[currentVelocityTrack];
+    const rect = velocityBarsContainer.getBoundingClientRect();
+
+    // 1. Calcola quale step stiamo toccando (Asse X)
+    // Sottraiamo il padding sinistro se necessario, ma col calcolo relativo al width totale è più fluido
+    const relativeX = e.clientX - rect.left;
+    const stepWidth = rect.width / track.steps;
+    
+    let stepIndex = Math.floor(relativeX / stepWidth);
+    
+    // Sicurezza: restiamo nei limiti dell'array (0 -> steps-1)
+    stepIndex = Math.max(0, Math.min(stepIndex, track.steps - 1));
+
+    // 2. Calcola il valore di velocity (Asse Y)
+    // Nota: in basso è 0, in alto è 127. Mouse Y cresce scendendo.
+    const relativeY = e.clientY - rect.top;
+    
+    // Normalizziamo da 0 a 1 (1 = basso/0 vel, 0 = alto/127 vel)
+    let normalizedVal = 1 - (relativeY / rect.height);
+    
+    // Clamping (non usciamo dai bordi verticali)
+    normalizedVal = Math.max(0, Math.min(normalizedVal, 1));
+
+    const newVelocity = Math.round(normalizedVal * 127);
+
+    // 3. APPLICA I CAMBIAMENTI
+    
+    // A) Aggiorna il dato nel modello
+    track.velocity[stepIndex] = newVelocity;
+
+    // B) Aggiorna visivamente lo slider specifico e il numero
+    // Recuperiamo il container dello step specifico
+    // Nota: children[stepIndex] corrisponde all'ordine di creazione
+    const stepContainer = velocityBarsContainer.children[stepIndex];
+    if (stepContainer) {
+        const slider = stepContainer.querySelector('.velocity-slider');
+        const display = stepContainer.querySelector('.velocity-value');
+        
+        if (slider) slider.value = newVelocity;
+        if (display) display.textContent = newVelocity;
+    }
+}
+
+function initVelocityPanel() {
+    const velocityTrackSelect = document.getElementById('velocityTrackSelect');
+
+    // Cambio traccia dal menu a tendina
+    velocityTrackSelect.addEventListener('change', (e) => {
+        currentVelocityTrack = parseInt(e.target.value);
+        renderVelocityBars();
+    });
+
+    // === GESTIONE PAINTING (Mouse & Touch) ===
+    
+    // Quando premiamo il mouse nel contenitore velocity
+    velocityBarsContainer.addEventListener('mousedown', (e) => {
+        isDrawingVelocity = true;
+        // Aggiorna subito il punto cliccato senza aspettare il movimento
+        updateVelocityFromPointer(e);
+    });
+
+    // Quando muoviamo il mouse OVUNQUE (window), se stiamo disegnando
+    window.addEventListener('mousemove', (e) => {
+        if (isDrawingVelocity) {
+            // Impedisce selezione testo o comportamenti strani di drag nativo
+            e.preventDefault(); 
+            updateVelocityFromPointer(e);
+        }
+    });
+
+    // Quando rilasciamo il click
+    window.addEventListener('mouseup', () => {
+        isDrawingVelocity = false;
+    });
+
+    // Render iniziale
     renderVelocityBars();
 }
 
