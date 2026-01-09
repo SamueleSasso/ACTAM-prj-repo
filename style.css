@@ -356,3 +356,121 @@ button:hover { opacity: 0.9; transform: translateY(-1px); }
 .t1-fill { fill: var(--track-2); }
 .t2-fill { fill: var(--track-3); }
 .t3-fill { fill: var(--track-4); }
+
+
+
+/* ===== MIDI MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85); /* Sfondo scuro semitrasparente */
+  backdrop-filter: blur(4px);       /* Effetto sfocatura moderno */
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none; /* Impedisce click quando nascosto */
+}
+
+.modal-container {
+  background: var(--panel-bg);
+  border: 1px solid #333;
+  border-radius: 12px;
+  width: 320px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+  transform: translateY(0);
+  transition: transform 0.2s ease;
+}
+
+.modal-overlay.hidden .modal-container {
+  transform: translateY(20px); /* Piccola animazione di entrata */
+}
+
+.modal-header h3 {
+  margin: 0 0 20px 0;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 2px;
+  font-size: 14px;
+  border-bottom: 1px solid #222;
+  padding-bottom: 15px;
+}
+
+.option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.option-label {
+  font-size: 13px;
+  color: #ccc;
+}
+
+/* Stile Checkbox custom */
+input[type="checkbox"] {
+  accent-color: #3498db;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Stile Selector Numerico */
+.cycle-selector {
+  display: flex;
+  gap: 5px;
+  background: #0e0e11;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #222;
+}
+
+.cycle-btn {
+  background: transparent;
+  border: none;
+  color: #666;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: none; /* Rimuove ombra default dei button globali */
+}
+
+.cycle-btn:hover {
+  color: #fff;
+  background: #222;
+  transform: none; /* Rimuove animazione default */
+}
+
+.cycle-btn.active {
+  background: #3498db;
+  color: #fff;
+}
+
+.modal-footer {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+}
+
+#confirmExportBtn {
+  background: #3498db;
+  color: #fff;
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  letter-spacing: 1px;
+}

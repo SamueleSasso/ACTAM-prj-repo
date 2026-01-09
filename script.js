@@ -804,13 +804,69 @@ function downloadMIDI() {
 
 // BINDING PULSANTE
 // Usa replaceChild per garantire che non ci siano listener duplicati (safe-mode)
+/* =================================================================
+   8. UI MODALE & BINDINGS (Sostituisce il vecchio binding)
+   ================================================================= */
+
+// Elementi DOM
+const modalOverlay = document.getElementById('midiModal');
+const confirmExportBtn = document.getElementById('confirmExportBtn');
+const cycleBtns = document.querySelectorAll('.cycle-btn');
+
+// Stato locale della modale
+let exportSettings = {
+    velocity: true,
+    merge: false,
+    cycles: 1
+};
+
+// 1. GESTIONE APERTURA (Tasto Export Principale)
+// Rimuoviamo il listener diretto a downloadMIDI e apriamo la modale
 if (exportBtn) {
     const newBtn = exportBtn.cloneNode(true);
     if (exportBtn.parentNode) {
         exportBtn.parentNode.replaceChild(newBtn, exportBtn);
-        newBtn.addEventListener('click', downloadMIDI);
+        newBtn.addEventListener('click', () => {
+            modalOverlay.classList.remove('hidden');
+        });
     }
 }
+
+// 2. GESTIONE CHIUSURA (Click fuori dalla finestra)
+modalOverlay.addEventListener('click', (e) => {
+    // Se clicco esattamente sull'overlay (lo sfondo scuro) e non sul contenuto
+    if (e.target === modalOverlay) {
+        modalOverlay.classList.add('hidden');
+    }
+});
+
+// 3. GESTIONE SELETTORE CICLI (1-4)
+cycleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Rimuovi classe active da tutti
+        cycleBtns.forEach(b => b.classList.remove('active'));
+        // Aggiungi a quello cliccato
+        btn.classList.add('active');
+        // Aggiorna stato
+        exportSettings.cycles = parseInt(btn.getAttribute('data-val'));
+    });
+});
+
+// 4. GESTIONE CONFERMA DOWNLOAD
+confirmExportBtn.addEventListener('click', () => {
+    // Aggiorna gli altri setting dai checkbox
+    exportSettings.velocity = document.getElementById('optVelocity').checked;
+    exportSettings.merge = document.getElementById('optMerge').checked;
+    
+    // Debug temporaneo per verificare che funzioni
+    console.log("Esportazione avviata con settings:", exportSettings);
+    
+    // Chiudi modale
+    modalOverlay.classList.add('hidden');
+    
+    // Lancia la vecchia funzione (che aggiorneremo dopo per usare i settings)
+    downloadMIDI(); 
+});
 
 // Init
 
