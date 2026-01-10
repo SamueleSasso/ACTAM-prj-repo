@@ -879,13 +879,74 @@ function downloadMIDI() {
 
 // BINDING PULSANTE
 // Usa replaceChild per garantire che non ci siano listener duplicati (safe-mode)
+/* =================================================================
+   8. UI MODALE & BINDINGS (Sostituisce il vecchio binding)
+   ================================================================= */
+
+// Elementi DOM
+const modalOverlay = document.getElementById('midiModal');
+const confirmExportBtn = document.getElementById('confirmExportBtn');
+const cycleBtns = document.querySelectorAll('.cycle-btn');
+
+// Stato locale della modale
+let exportSettings = {
+    velocity: true,
+    merge: false,
+    selectedTracks: [0, 1, 2, 3] // Default: tutte le tracce (ID 0-3)
+};
+
+// 1. GESTIONE APERTURA (Tasto Export Principale)
 if (exportBtn) {
     const newBtn = exportBtn.cloneNode(true);
     if (exportBtn.parentNode) {
         exportBtn.parentNode.replaceChild(newBtn, exportBtn);
-        newBtn.addEventListener('click', downloadMIDI);
+        newBtn.addEventListener('click', () => {
+            modalOverlay.classList.remove('hidden');
+        });
     }
 }
+
+// 2. GESTIONE CHIUSURA
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+        modalOverlay.classList.add('hidden');
+    }
+});
+
+// 3. GESTIONE SELETTORE TRACCE (Multi-Select)
+cycleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        btn.classList.toggle('active'); // Toggle visuale
+        
+        const val = parseInt(btn.getAttribute('data-val'));
+        const trackId = val - 1; 
+
+        if (btn.classList.contains('active')) {
+            // Aggiungi trackId se manca
+            if (!exportSettings.selectedTracks.includes(trackId)) {
+                exportSettings.selectedTracks.push(trackId);
+            }
+        } else {
+            // Rimuovi trackId se presente
+            exportSettings.selectedTracks = exportSettings.selectedTracks.filter(id => id !== trackId);
+        }
+        
+        exportSettings.selectedTracks.sort((a, b) => a - b);
+        console.log("Selected Tracks:", exportSettings.selectedTracks);
+    });
+});
+
+// 4. GESTIONE CONFERMA
+confirmExportBtn.addEventListener('click', () => {
+    exportSettings.velocity = document.getElementById('optVelocity').checked;
+    exportSettings.merge = document.getElementById('optMerge').checked;
+    
+    // Chiudi modale
+    modalOverlay.classList.add('hidden');
+    
+    // Avvia export (la logica interna verrà aggiornata successivamente)
+    downloadMIDI(); 
+});
 
 // Init
 

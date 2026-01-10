@@ -388,29 +388,131 @@ button:hover {
   stroke: rgba(255, 255, 255, 0.15);
 }
 
-.dot {
-  opacity: 0.28;
-  transition: opacity 0.12s ease;
+.dot { opacity: 0.28; transition: opacity 0.12s ease; cursor: pointer; }
+.dot.playing { opacity: 1 !important; filter: drop-shadow(0 0 12px currentColor); }
+.t0-fill { fill: var(--track-1); }
+.t1-fill { fill: var(--track-2); }
+.t2-fill { fill: var(--track-3); }
+.t3-fill { fill: var(--track-4); }
+
+
+
+/* ===== MIDI MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85); 
+  backdrop-filter: blur(4px);       
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none; 
+}
+
+.modal-container {
+  background: var(--panel-bg);
+  border: 1px solid #333;
+  border-radius: 16px; /* Aumentato */
+  /* SCALING: Finestra più larga (da 320px a 420px) */
+  width: 420px;
+  padding: 30px; /* Più spazio interno */
+  box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+  transform: translateY(0);
+  transition: transform 0.2s ease;
+}
+
+.modal-overlay.hidden .modal-container {
+  transform: translateY(20px); 
+}
+
+.modal-header h3 {
+  margin: 0 0 25px 0; /* Più margine */
+  color: #fff;
+  text-align: center;
+  letter-spacing: 2px;
+  font-size: 18px; /* Font più grande */
+  border-bottom: 1px solid #222;
+  padding-bottom: 15px;
+}
+
+.option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; /* Più spazio tra le righe */
+}
+
+.option-label {
+  font-size: 16px; /* Testo più leggibile */
+  color: #ccc;
+}
+
+/* Stile Checkbox custom */
+input[type="checkbox"] {
+  accent-color: #3498db;
+  width: 22px; /* Checkbox più grande */
+  height: 22px;
   cursor: pointer;
 }
 
-.dot.playing {
-  opacity: 1 !important;
-  filter: drop-shadow(0 0 12px currentColor);
+/* Stile Selector Numerico */
+.cycle-selector {
+  display: flex;
+  gap: 10px; /* Più spazio tra i bottoni */
+  background: #0e0e11;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #222;
 }
 
-.t0-fill {
-  fill: var(--track-1);
+.cycle-btn {
+  background: transparent;
+  border: none;
+  color: #666;
+  width: 40px; /* Bottoni decisamente più grandi */
+  height: 40px;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 16px; /* Numero più grande */
+  cursor: pointer;
+  box-shadow: none; 
+  transition: all 0.2s ease;
 }
 
-.t1-fill {
-  fill: var(--track-2);
+.cycle-btn:hover {
+  color: #fff;
+  background: #222;
+  transform: none; 
 }
 
-.t2-fill {
-  fill: var(--track-3);
+.cycle-btn.active {
+  background: #3498db;
+  color: #fff;
+  font-weight: bold;
 }
 
-.t3-fill {
-  fill: var(--track-4);
+.modal-footer {
+  margin-top: 35px;
+  display: flex;
+  justify-content: center;
+}
+
+#confirmExportBtn {
+  background: #3498db;
+  color: #fff;
+  width: 100%;
+  padding: 16px; /* Bottone conferma più alto */
+  font-size: 16px;
+  letter-spacing: 1px;
+  border-radius: 8px;
 }
