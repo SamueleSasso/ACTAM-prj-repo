@@ -55,11 +55,14 @@ const players = new Tone.Players(samples, {
 
 // Player pool for overlapping playback
 const playerPools = {};
-Object.keys(samples).forEach(sampleKey => {
+Object.keys(samples).forEach((sampleKey, idx) => {
     playerPools[sampleKey] = [];
-    for (let i = 0; i < 4; i++) { // Pool size 4, adjust as needed
-        const p = new Tone.Player(samples[sampleKey]).connect(masterPanner);
-        playerPools[sampleKey].push(p);
+    for (let i = 0; i < 4; i++) {
+        // Collega il player al gainNode della traccia giusta
+        if (tracks[idx]) {
+            const p = new Tone.Player(samples[sampleKey]).connect(tracks[idx].gainNode);
+            playerPools[sampleKey].push(p);
+        }
     }
 });
 
@@ -183,6 +186,7 @@ class Knob {
 /* =================================================================
    4. UI GENERATION
    ================================================================= */
+//velocity bars rendering
 const velocityBarsContainer = document.getElementById('velocityBars');
 
 function renderVelocityBars() {
@@ -255,6 +259,72 @@ function initVelocityPanel() {
     renderVelocityBars();
 }
 
+
+// ASDR section rendering
+const adsrDefaults = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 };
+tracks.forEach(track => {
+    track.adsr = { ...adsrDefaults };
+});
+
+let currentAdsrTrack = 0;
+
+const adsrKnobsContainer = document.getElementById('adsrKnobs');
+const adsrParams = [
+    { key: 'attack', label: 'ATTACK', min: 0, max: 2, step: 0.01 },
+    { key: 'decay', label: 'DECAY', min: 0, max: 2, step: 0.01 },
+    { key: 'sustain', label: 'SUSTAIN', min: 0, max: 1, step: 0.01 },
+    { key: 'release', label: 'RELEASE', min: 0, max: 3, step: 0.01 }
+];
+
+function renderAdsrKnobs() {
+    adsrKnobsContainer.innerHTML = '';
+    const track = tracks[currentAdsrTrack];
+    adsrParams.forEach(param => {
+        const knobDiv = document.createElement('div');
+        // Use the small knob style
+        knobDiv.className = 'knob-container small';
+        new Knob(
+            knobDiv,
+            param.label,
+            param.min,
+            param.max,
+            track.adsr[param.key],
+            track.colorVar,
+            (v) => {
+                track.adsr[param.key] = v;
+            },
+            param.step
+        );
+        adsrKnobsContainer.appendChild(knobDiv);
+    });
+}
+
+function initAdsrPanel() {
+    const adsrTrackSelect = document.getElementById('adsrTrackSelect');
+    adsrTrackSelect.addEventListener('change', (e) => {
+        currentAdsrTrack = parseInt(e.target.value);
+        renderAdsrKnobs();
+    });
+    renderAdsrKnobs();
+}
+
+// --- ENVELOPE LOGIC: Apply ADSR to each note trigger ---
+function triggerEnvelope(track, time, velocity) {
+    // Use the track's gainNode for envelope
+    const env = track.adsr;
+    const gain = track.gainNode.gain;
+    // Cancel scheduled ramps
+    gain.cancelScheduledValues(time);
+    // Attack
+    gain.setValueAtTime(0, time);
+    gain.linearRampToValueAtTime(velocity, time + env.attack);
+    // Decay
+    gain.linearRampToValueAtTime(velocity * env.sustain, time + env.attack + env.decay);
+    // Release (scheduled on note off, but for drums, we can auto-release after step)
+    // For one-shots, you may want to release after a fixed time:
+    const releaseStart = time + env.attack + env.decay + 0.05;
+    gain.linearRampToValueAtTime(0, releaseStart + env.release);
+}
 
 /* =================================================================
    LOGICA VELOCITY PAINTING (Minimal & Functional)
@@ -661,6 +731,9 @@ function playStep(time) {
             if (track.pattern[stepIdx] === 1) {
                 const velocity = track.velocity[stepIdx] / 127; // Normalizza da 0-127 a 0-1
 
+                // Envelope
+                triggerEnvelope(track, time, velocity);
+
                 // Se è un sample custom, usa il player salvato
                 if (track.sample.startsWith('user_') && track.customPlayer) {
                     track.customPlayer.volume.value = Tone.gainToDb(velocity);
@@ -952,3 +1025,4 @@ confirmExportBtn.addEventListener('click', () => {
 
 initInterface();
 initVelocityPanel();
+initAdsrPanel();

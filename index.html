@@ -13,7 +13,7 @@
 <body>
   <div class="wrap">
     <div class="panel">
-      
+
       <div class="left-section">
         <div class="tracks-columns">
           <div class="controls" id="track-0"></div>
@@ -21,7 +21,7 @@
           <div class="controls" id="track-2"></div>
           <div class="controls" id="track-3"></div>
         </div>
-        
+
         <div class="velocity-panel">
           <div class="velocity-header">
             <h3>VELOCITY</h3>
@@ -34,6 +34,18 @@
           </div>
           <div class="velocity-bars" id="velocityBars"></div>
         </div>
+        <div class="adsr-panel">
+          <div class="adsr-header">
+            <h3>ENVELOPE</h3>
+            <select id="adsrTrackSelect">
+              <option value="0">Track 1</option>
+              <option value="1">Track 2</option>
+              <option value="2">Track 3</option>
+              <option value="3">Track 4</option>
+            </select>
+          </div>
+          <div class="adsr-knobs" id="adsrKnobs"></div>
+        </div>
       </div>
 
       <div class="right-section">
@@ -42,7 +54,7 @@
             <g id="tracksGroup" transform="translate(350,350)"></g>
           </svg>
         </div>
-        
+
         <div class="global-controls">
           <div id="status" class="status-msg">Loading Samples...</div>
           <div class="standard-input-group" style="margin-bottom: 10px;">
@@ -65,7 +77,7 @@
       <div class="modal-header">
         <h3>MIDI SETTINGS</h3>
       </div>
-      
+
       <!-- <div class="modal-body">
         <div class="option-row">
           <label for="optVelocity" class="option-label">Maintain Velocity</label>

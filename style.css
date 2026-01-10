@@ -388,12 +388,32 @@ button:hover {
   stroke: rgba(255, 255, 255, 0.15);
 }
 
-.dot { opacity: 0.28; transition: opacity 0.12s ease; cursor: pointer; }
-.dot.playing { opacity: 1 !important; filter: drop-shadow(0 0 12px currentColor); }
-.t0-fill { fill: var(--track-1); }
-.t1-fill { fill: var(--track-2); }
-.t2-fill { fill: var(--track-3); }
-.t3-fill { fill: var(--track-4); }
+.dot {
+  opacity: 0.28;
+  transition: opacity 0.12s ease;
+  cursor: pointer;
+}
+
+.dot.playing {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 12px currentColor);
+}
+
+.t0-fill {
+  fill: var(--track-1);
+}
+
+.t1-fill {
+  fill: var(--track-2);
+}
+
+.t2-fill {
+  fill: var(--track-3);
+}
+
+.t3-fill {
+  fill: var(--track-4);
+}
 
 
 
@@ -404,8 +424,8 @@ button:hover {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.85); 
-  backdrop-filter: blur(4px);       
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
   z-index: 9999;
   display: flex;
   justify-content: center;
@@ -416,31 +436,35 @@ button:hover {
 
 .modal-overlay.hidden {
   opacity: 0;
-  pointer-events: none; 
+  pointer-events: none;
 }
 
 .modal-container {
   background: var(--panel-bg);
   border: 1px solid #333;
-  border-radius: 16px; /* Aumentato */
+  border-radius: 16px;
+  /* Aumentato */
   /* SCALING: Finestra più larga (da 320px a 420px) */
   width: 420px;
-  padding: 30px; /* Più spazio interno */
-  box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+  padding: 30px;
+  /* Più spazio interno */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
   transform: translateY(0);
   transition: transform 0.2s ease;
 }
 
 .modal-overlay.hidden .modal-container {
-  transform: translateY(20px); 
+  transform: translateY(20px);
 }
 
 .modal-header h3 {
-  margin: 0 0 25px 0; /* Più margine */
+  margin: 0 0 25px 0;
+  /* Più margine */
   color: #fff;
   text-align: center;
   letter-spacing: 2px;
-  font-size: 18px; /* Font più grande */
+  font-size: 18px;
+  /* Font più grande */
   border-bottom: 1px solid #222;
   padding-bottom: 15px;
 }
@@ -449,18 +473,21 @@ button:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px; /* Più spazio tra le righe */
+  margin-bottom: 20px;
+  /* Più spazio tra le righe */
 }
 
 .option-label {
-  font-size: 16px; /* Testo più leggibile */
+  font-size: 16px;
+  /* Testo più leggibile */
   color: #ccc;
 }
 
 /* Stile Checkbox custom */
 input[type="checkbox"] {
   accent-color: #3498db;
-  width: 22px; /* Checkbox più grande */
+  width: 22px;
+  /* Checkbox più grande */
   height: 22px;
   cursor: pointer;
 }
@@ -468,7 +495,8 @@ input[type="checkbox"] {
 /* Stile Selector Numerico */
 .cycle-selector {
   display: flex;
-  gap: 10px; /* Più spazio tra i bottoni */
+  gap: 10px;
+  /* Più spazio tra i bottoni */
   background: #0e0e11;
   padding: 8px;
   border-radius: 8px;
@@ -479,20 +507,22 @@ input[type="checkbox"] {
   background: transparent;
   border: none;
   color: #666;
-  width: 40px; /* Bottoni decisamente più grandi */
+  width: 40px;
+  /* Bottoni decisamente più grandi */
   height: 40px;
   padding: 0;
   border-radius: 6px;
-  font-size: 16px; /* Numero più grande */
+  font-size: 16px;
+  /* Numero più grande */
   cursor: pointer;
-  box-shadow: none; 
+  box-shadow: none;
   transition: all 0.2s ease;
 }
 
 .cycle-btn:hover {
   color: #fff;
   background: #222;
-  transform: none; 
+  transform: none;
 }
 
 .cycle-btn.active {
@@ -511,8 +541,61 @@ input[type="checkbox"] {
   background: #3498db;
   color: #fff;
   width: 100%;
-  padding: 16px; /* Bottone conferma più alto */
+  padding: 16px;
+  /* Bottone conferma più alto */
   font-size: 16px;
   letter-spacing: 1px;
   border-radius: 8px;
+}
+
+/* style ADSR section */
+.adsr-panel {
+  width: 320px;
+  margin-top: 18px;
+  background: #0e0e11;
+  padding: 12px 18px 18px 18px;
+  border-radius: 12px;
+  border: 1px solid #222;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.adsr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.adsr-header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.adsr-header select {
+  width: 110px;
+  padding: 4px;
+  height: 28px;
+}
+
+.adsr-knobs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  width: 100%;
+  justify-items: center;
+}
+
+.knob-container.small {
+  --knob-size: 38px;
+  width: var(--knob-size);
+}
+
+.knob-container.small .knob-wrapper {
+  width: var(--knob-size);
+  height: var(--knob-size);
 }
