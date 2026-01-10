@@ -1,51 +1,135 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Euclidean Poly-Sequencer — Master Edition</title>
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/midi-writer-js@3.1.1/browser/midiwriter.min.js"></script>
-
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
-<div class="wrap">
-  <div class="panel">
-    
-    <div class="controls">
-      <h3>POLY-SEQUENCER</h3>
-      <div id="status" class="status-msg">Loading Samples...</div>
+  <div class="wrap">
+    <div class="panel">
       
-      <div id="tracks-container">
+      <div class="left-section">
+        <div class="tracks-columns">
+          <div class="controls" id="track-0"></div>
+          <div class="controls" id="track-1"></div>
+          <div class="controls" id="track-2"></div>
+          <div class="controls" id="track-3"></div>
         </div>
-
-      <div class="master-controls">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-           <span style="color:#aaa; font-weight:bold;">MASTER BPM</span>
-           <input id="bpm" type="number" value="120" style="width:60px; background:#111; color:#fff; border:1px solid #444; padding:5px; border-radius:4px;">
-        </div>
-        <div class="buttons-row">
-          <button id="startBtn">START</button>
-          <button id="stopBtn">STOP</button>
-          <button id="exportBtn">MIDI</button>
+        
+        <div class="velocity-panel">
+          <div class="velocity-header">
+            <h3>VELOCITY</h3>
+            <select id="velocityTrackSelect">
+              <option value="0">Track 1</option>
+              <option value="1">Track 2</option>
+              <option value="2">Track 3</option>
+              <option value="3">Track 4</option>
+            </select>
+          </div>
+          <div class="velocity-bars" id="velocityBars"></div>
         </div>
       </div>
-    </div>
 
-    <div class="visual">
-      <svg id="mainSvg" viewBox="0 0 600 600">
-        <g id="tracksGroup" transform="translate(300,300)">
-          </g>
-      </svg>
+      <div class="right-section">
+        <div class="visual">
+          <svg id="mainSvg" viewBox="0 0 700 700">
+            <g id="tracksGroup" transform="translate(350,350)"></g>
+          </svg>
+        </div>
+        
+        <div class="global-controls">
+          <div id="status" class="status-msg">Loading Samples...</div>
+          <div class="standard-input-group" style="margin-bottom: 10px;">
+            <label>MASTER BPM</label>
+            <input id="bpm" type="number" value="120" style="text-align:center; font-size:14px;">
+          </div>
+          <div class="buttons-row">
+            <button id="startBtn">START</button>
+            <button id="stopBtn">STOP</button>
+            <button id="exportBtn">MIDI</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
-</div>
 
-<script src="script.js"></script>
+  <div id="midiModal" class="modal-overlay hidden">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>MIDI SETTINGS</h3>
+      </div>
+      
+      <!-- <div class="modal-body">
+        <div class="option-row">
+          <label for="optVelocity" class="option-label">Maintain Velocity</label>
+          <input type="checkbox" id="optVelocity" checked>
+        </div>
 
+        <div class="option-row">
+          <label for="optMerge" class="option-label">Merge in Single Track</label>
+          <input type="checkbox" id="optMerge">
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">Tracks Selection</span>
+          <div class="cycle-selector">
+
+
+          <input id="www1" class="cycle-btn" type="checkbox" id="optMerge">
+          <label for="www1">1</label>
+                    <input id="www2" class="cycle-btn" type="checkbox" id="optMerge">
+          <label for="www2">2</label>
+                    <input id="www3" class="cycle-btn" type="checkbox" id="optMerge">
+          <label for="www3">3</label>
+                    <input id="www4" class="cycle-btn" type="checkbox" id="optMerge">
+          <label for="www4">4</label>
+
+
+            <button class="cycle-btn active" data-val="1">1</button>
+            <button class="cycle-btn active" data-val="2">2</button>
+            <button class="cycle-btn active" data-val="3">3</button>
+            <button class="cycle-btn active" data-val="4">4</button>
+          </div>
+        </div>
+      </div>  -->
+
+      <div class="modal-body">
+        <div class="option-row">
+          <label for="optVelocity" class="option-label">Maintain Velocity</label>
+          <input type="checkbox" id="optVelocity" checked>
+        </div>
+
+        <div class="option-row">
+          <label for="optMerge" class="option-label">Merge in Single Track</label>
+          <input type="checkbox" id="optMerge">
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">Tracks Selection</span>
+          <div class="cycle-selector">
+            <button class="cycle-btn active" data-val="1">1</button>
+            <button class="cycle-btn active" data-val="2">2</button>
+            <button class="cycle-btn active" data-val="3">3</button>
+            <button class="cycle-btn active" data-val="4">4</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="confirmExportBtn" class="action-btn">DOWNLOAD .MID</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="script.js"></script>
 </body>
+
 </html>
