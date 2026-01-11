@@ -230,6 +230,14 @@ body {
   cursor: pointer;
 }
 
+/* --- AGGIUNTA: Slider Inattivi --- */
+/* Rende lo slider grigio e trasparente quando il pulse è spento */
+.velocity-slider.inactive-slider {
+  /*accent-color: #444 !important; /* Sovrascrive il colore della traccia */
+  /*opacity: 0.25;                 /* Feedback visivo di 'disabilitato' */
+  filter: brightness(20%);       /* Rimuove saturazione */
+}
+
 /* Rendi visibile il numero (0-127) */
 .velocity-value {
   display: block;
