@@ -10,7 +10,7 @@ const masterPanner = new Tone.Panner(0).toDestination();
 // Lista campioni
 const samples = {
     kick: "https://tonejs.github.io/audio/drum-samples/CR78/kick.mp3",
-    snare: "https://tonejs.github.io/audio/drum-samples/CR78/snare.mp3",
+    snare: "https://raw.githubusercontent.com/dadymazz/fist-repository/main/909-kick.wav",
     hihat: "https://tonejs.github.io/audio/drum-samples/CR78/hihat.mp3",
     tom: "https://tonejs.github.io/audio/drum-samples/CR78/tom1.mp3",
 };
@@ -58,11 +58,11 @@ const playerPools = {};
 Object.keys(samples).forEach((sampleKey, idx) => {
     playerPools[sampleKey] = [];
     for (let i = 0; i < 4; i++) {
-        // Collega il player al gainNode della traccia giusta
-        if (tracks[idx]) {
-            const p = new Tone.Player(samples[sampleKey]).connect(tracks[idx].gainNode);
-            playerPools[sampleKey].push(p);
-        }
+        // Crea un gain dedicato per ogni player
+        const playerGain = new Tone.Gain(1).connect(masterPanner);
+        const p = new Tone.Player(samples[sampleKey]).connect(playerGain);
+        p._gainNode = playerGain; // Salva il gain sul player
+        playerPools[sampleKey].push(p);
     }
 });
 
@@ -183,6 +183,104 @@ class Knob {
     }
 }
 
+/* PRESET DEFINITION */
+/* =================================================================
+   PRESET DEFINITIONS
+   ================================================================= */
+const presets = {
+    ambient: {
+        bpm: 90,
+        tracks: [
+            { steps: 16, pulses: 4, offset: 0, sample: 'kick', adsr: { attack: 0.05, decay: 0.3, sustain: 0.5, release: 0.5 } },
+            { steps: 12, pulses: 3, offset: 2, sample: 'snare', adsr: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.3 } },
+            { steps: 8, pulses: 2, offset: 1, sample: 'hihat', adsr: { attack: 0.005, decay: 0.15, sustain: 0.2, release: 0.2 } },
+            { steps: 5, pulses: 1, offset: 0, sample: 'tom', adsr: { attack: 0.02, decay: 0.25, sustain: 0.4, release: 0.4 } }
+        ]
+    },
+    techno: {
+        bpm: 128,
+        tracks: [
+            { steps: 16, pulses: 8, offset: 0, sample: 'kick', adsr: { attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.1 } },
+            { steps: 16, pulses: 4, offset: 4, sample: 'snare', adsr: { attack: 0.005, decay: 0.08, sustain: 0.6, release: 0.08 } },
+            { steps: 16, pulses: 12, offset: 2, sample: 'hihat', adsr: { attack: 0.002, decay: 0.05, sustain: 0.7, release: 0.05 } },
+            { steps: 8, pulses: 4, offset: 1, sample: 'tom', adsr: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1 } }
+        ]
+    },
+    polyrhythm: {
+        bpm: 110,
+        tracks: [
+            { steps: 16, pulses: 3, offset: 0, sample: 'kick', adsr: { attack: 0.01, decay: 0.15, sustain: 0.6, release: 0.15 } },
+            { steps: 12, pulses: 5, offset: 3, sample: 'snare', adsr: { attack: 0.01, decay: 0.12, sustain: 0.5, release: 0.12 } },
+            { steps: 8, pulses: 3, offset: 2, sample: 'hihat', adsr: { attack: 0.005, decay: 0.1, sustain: 0.4, release: 0.1 } },
+            { steps: 5, pulses: 2, offset: 1, sample: 'tom', adsr: { attack: 0.01, decay: 0.13, sustain: 0.45, release: 0.13 } }
+        ]
+    },
+    industrial: {
+        bpm: 140,
+        tracks: [
+            { steps: 16, pulses: 6, offset: 0, sample: 'kick', adsr: { attack: 0.008, decay: 0.12, sustain: 0.7, release: 0.12 } },
+            { steps: 16, pulses: 8, offset: 8, sample: 'snare', adsr: { attack: 0.01, decay: 0.1, sustain: 0.65, release: 0.1 } },
+            { steps: 16, pulses: 14, offset: 4, sample: 'hihat', adsr: { attack: 0.003, decay: 0.06, sustain: 0.75, release: 0.06 } },
+            { steps: 8, pulses: 3, offset: 3, sample: 'tom', adsr: { attack: 0.012, decay: 0.11, sustain: 0.55, release: 0.11 } }
+        ]
+    },
+    custom: {
+        bpm: 120,
+        tracks: [
+            { steps: 16, pulses: 4, offset: 0, sample: 'kick', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
+            { steps: 12, pulses: 5, offset: 0, sample: 'snare', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
+            { steps: 8, pulses: 3, offset: 0, sample: 'hihat', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
+            { steps: 5, pulses: 2, offset: 0, sample: 'tom', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } }
+        ]
+    }
+};
+
+let currentPreset = 'custom';
+function applyPreset(presetName) {
+    const preset = presets[presetName];
+    if (!preset) return;
+
+    // Stop sequencer if playing
+    if (isPlaying) stopSequencer();
+
+    // Update BPM
+    document.getElementById('bpm').value = preset.bpm;
+
+    // Update tracks
+    preset.tracks.forEach((presetTrack, idx) => {
+        const track = tracks[idx];
+        track.steps = presetTrack.steps;
+        track.pulses = presetTrack.pulses;
+        track.offset = presetTrack.offset;
+        track.sample = presetTrack.sample;
+        track.adsr = { ...presetTrack.adsr };
+        regenerateTrack(track);
+    });
+
+    // Re-render UI
+    renderVelocityBars();
+    renderAdsrKnobs();
+
+    // Update button state
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-preset') === presetName) {
+            btn.classList.add('active');
+        }
+    });
+
+    currentPreset = presetName;
+    statusEl.textContent = `PRESET: ${presetName.toUpperCase()}`;
+    statusEl.style.color = "#3498db";
+}
+
+// Preset button bindings
+document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const presetName = btn.getAttribute('data-preset');
+        applyPreset(presetName);
+    });
+});
 /* =================================================================
    4. UI GENERATION
    ================================================================= */
@@ -270,10 +368,10 @@ let currentAdsrTrack = 0;
 
 const adsrKnobsContainer = document.getElementById('adsrKnobs');
 const adsrParams = [
-    { key: 'attack', label: 'ATTACK', min: 0, max: 2, step: 0.01 },
+    { key: 'attack', label: 'ATTACK', min: 0.005, max: 2, step: 0.01 },
     { key: 'decay', label: 'DECAY', min: 0, max: 2, step: 0.01 },
     { key: 'sustain', label: 'SUSTAIN', min: 0, max: 1, step: 0.01 },
-    { key: 'release', label: 'RELEASE', min: 0, max: 3, step: 0.01 }
+    { key: 'release', label: 'RELEASE', min: 0.01, max: 3, step: 0.01 }
 ];
 
 function renderAdsrKnobs() {
@@ -309,23 +407,15 @@ function initAdsrPanel() {
 }
 
 // --- ENVELOPE LOGIC: Apply ADSR to each note trigger ---
-function triggerEnvelope(track, time, velocity) {
-    // Use the track's gainNode for envelope
-    const env = track.adsr;
-    const gain = track.gainNode.gain;
-    // Cancel scheduled ramps
+function triggerEnvelope(gain, time, velocity, adsr, gainValue) {
     gain.cancelScheduledValues(time);
-    // Attack
-    gain.setValueAtTime(0, time);
-    gain.linearRampToValueAtTime(velocity, time + env.attack);
-    // Decay
-    gain.linearRampToValueAtTime(velocity * env.sustain, time + env.attack + env.decay);
-    // Release (scheduled on note off, but for drums, we can auto-release after step)
-    // For one-shots, you may want to release after a fixed time:
-    const releaseStart = time + env.attack + env.decay + 0.05;
-    gain.linearRampToValueAtTime(0, releaseStart + env.release);
+    const currentValue = gain.value;
+    gain.setValueAtTime(currentValue, time);
+    gain.linearRampToValueAtTime(velocity * gainValue, time + adsr.attack);
+    gain.linearRampToValueAtTime(velocity * gainValue * adsr.sustain, time + adsr.attack + adsr.decay);
+    const releaseStart = time + adsr.attack + adsr.decay + 0.05;
+    gain.linearRampToValueAtTime(0, releaseStart + adsr.release);
 }
-
 /* =================================================================
    LOGICA VELOCITY PAINTING (Minimal & Functional)
    ================================================================= */
@@ -545,8 +635,9 @@ function initInterface() {
             const userSampleName = `user_${track.id}_${Date.now()}`;
 
             try {
-                // Crea un nuovo Player isolato per il sample custom
-                const customPlayer = new Tone.Player(url).connect(track.gainNode);
+                // Crea un gain dedicato per il custom player
+                const customGain = new Tone.Gain(1).connect(masterPanner);
+                const customPlayer = new Tone.Player(url).connect(customGain);
 
                 // Aspetta che il buffer sia caricato
                 await customPlayer.load(url);
@@ -562,8 +653,9 @@ function initInterface() {
                     track.customPlayer.dispose();
                 }
 
-                // Salva il nuovo player sulla traccia
+                // Salva il nuovo player e il suo gain sulla traccia
                 track.customPlayer = customPlayer;
+                track.customPlayerGain = customGain;
                 track.sample = userSampleName;
 
                 // Aggiungi la nuova option "User Sample"
@@ -731,33 +823,31 @@ function playStep(time) {
             if (track.pattern[stepIdx] === 1) {
                 const velocity = track.velocity[stepIdx] / 127; // Normalizza da 0-127 a 0-1
 
-                // Envelope
-                triggerEnvelope(track, time, velocity);
 
                 // Se è un sample custom, usa il player salvato
-                if (track.sample.startsWith('user_') && track.customPlayer) {
-                    track.customPlayer.volume.value = Tone.gainToDb(velocity);
+                if (track.sample.startsWith('user_') && track.customPlayer && track.customPlayerGain) {
+
+                    triggerEnvelope(track.customPlayerGain.gain, time, velocity, track.adsr, track.gainNode.gain.value);
                     track.customPlayer.start(time);
                 }
                 // Altrimenti usa i sample di default
                 else if (players.loaded && players.has(track.sample)) {
-                    // Use a player from the pool for overlapping playback
                     const pool = playerPools[track.sample];
                     if (pool) {
-                        // Find a player that's not currently playing
                         let found = false;
                         for (let i = 0; i < pool.length; i++) {
                             const p = pool[i];
                             if (!p.state || p.state === "stopped") {
-                                p.volume.value = Tone.gainToDb(velocity);
+
+                                triggerEnvelope(p._gainNode.gain, time, velocity, track.adsr, track.gainNode.gain.value);
                                 p.start(time);
                                 found = true;
                                 break;
                             }
                         }
-                        // If all are busy, force the first one to play (may cut off previous sound)
                         if (!found) {
-                            pool[0].volume.value = Tone.gainToDb(velocity);
+
+                            triggerEnvelope(pool[0]._gainNode.gain, time, velocity, track.adsr, track.gainNode.gain.value);
                             pool[0].start(time);
                         }
                     }
@@ -1022,7 +1112,7 @@ confirmExportBtn.addEventListener('click', () => {
 });
 
 // Init
-
+applyPreset('custom');
 initInterface();
 initVelocityPanel();
 initAdsrPanel();

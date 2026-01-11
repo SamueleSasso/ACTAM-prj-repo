@@ -1,3 +1,72 @@
+/* ===== PRESET MENU ===== */
+.preset-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(180deg, #111217 0%, #0b0b0d 100%);
+  border-bottom: 1px solid #222;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.preset-label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #666;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.preset-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.preset-btn {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #888;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+  box-shadow: none;
+  text-transform: uppercase;
+}
+
+.preset-btn:hover {
+  color: #fff;
+  border-color: #555;
+  background: #1a1a1f;
+  transform: none;
+}
+
+.preset-btn.active {
+  background: #3498db;
+  color: #fff;
+  border-color: #3498db;
+}
+
+/* Adjust wrap to account for menu height */
+body {
+  padding-top: 50px;
+}
+
+.wrap {
+  height: calc(100vh - 50px);
+}
+
+
+/* SEQUENER */
 :root {
   --bg: #0b0b0d;
   --panel-bg: #111217;
