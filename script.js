@@ -765,19 +765,21 @@ function stopSequencer() {
 startBtn.onclick = startSequencer;
 document.getElementById('stopBtn').onclick = stopSequencer;
 
+
 /* =================================================================
-   7. MIDI EXPORT ENGINE (HYBRID: ORIGINAL MULTITRACK + SORTED MERGE)
+   7. MIDI EXPORT ENGINE (FIXED: MERGE TIMING CORRECTED)
    ================================================================= */
 
 const exportBtn = document.getElementById('exportBtn');
 
 function downloadMIDI(options) {
+    // SECURITY CHECK
     if (typeof MidiWriter === 'undefined') {
         alert("Errore critico: Libreria MidiWriter non caricata.");
         return;
     }
 
-    // 1. SETUP OPZIONI (con fallback per sicurezza)
+    // 1. SETUP OPZIONI
     const settings = {
         velocity: (options && options.velocity !== undefined) ? options.velocity : true,
         merge: (options && options.merge !== undefined) ? options.merge : false,
@@ -789,140 +791,96 @@ function downloadMIDI(options) {
         return;
     }
 
+    // --- CONFIGURAZIONE STANDARD ---
     const midiMap = { kick: 36, snare: 38, hihat: 42, tom: 47 };
-    const PPQ = 128; 
-    const TICKS_PER_BAR = PPQ * 4; // 512
+    const PPQ = 128;            // Standard MidiWriter (128 tick per quarto)
+    const TICKS_PER_BAR = 512;  // 128 * 4 (Corretto per 4/4)
     const BARS_TO_EXPORT = 4;
-    
-    const midiTracks = [];
+    const TOTAL_TICKS_LENGTH = TICKS_PER_BAR * BARS_TO_EXPORT; // 2048 tick totali
 
-    // =========================================================
-    // BRANCH A: MERGE (Logica adattata per traccia unica)
-    // =========================================================
-    if (settings.merge) {
-        const mergedTrack = new MidiWriter.Track();
-        mergedTrack.addTrackName(`Actam Merged`);
+    // Recupero BPM dall'UI
+    const currentBpm = parseInt(document.getElementById('bpm').value) || 120;
+
+    const separateTracks = []; 
+    const mergePool = [];      
+
+    // 2. GENERAZIONE CORE (Ciclo Unico)
+    settings.selectedTracks.forEach(tIdx => {
+        const t = tracks[tIdx];
+        if (!t) return;
+
+        // Prepariamo la traccia singola
+        const track = new MidiWriter.Track();
+        track.addTrackName(`Track ${tIdx + 1} - ${t.sample.toUpperCase()}`);
+        track.setTempo(currentBpm);
+        track.setTimeSignature(4, 4);
+
+        const noteNumber = midiMap[t.sample] || 36;
+        const totalStepsToExport = t.steps * BARS_TO_EXPORT;
         
-        let allEvents = [];
+        let waitBuffer = 0; 
 
-        // 1. RACCOLTA EVENTI (Usa la TUA matematica originale)
-        settings.selectedTracks.forEach(tIdx => {
-            const t = tracks[tIdx];
-            if (!t) return;
+        for (let i = 0; i < totalStepsToExport; i++) {
+            const patternIdx = i % t.steps;
+            const isActive = t.pattern[patternIdx] === 1;
 
-            const noteNumber = midiMap[t.sample] || 36;
-            const totalSteps = t.steps * BARS_TO_EXPORT;
+            // --- MATEMATICA PRECISA ---
+            const absStartBar = i / t.steps;
+            const absEndBar = (i + 1) / t.steps;
 
-            for (let i = 0; i < totalSteps; i++) {
-                const patternIdx = i % t.steps;
-                if (t.pattern[patternIdx] === 1) {
-                    
-                    // Calcolo Tick esatto (Original Logic)
-                    const absStartBar = i / t.steps;
-                    const absEndBar = (i + 1) / t.steps;
-                    
-                    const startTick = Math.round(absStartBar * TICKS_PER_BAR);
-                    const endTick = Math.round(absEndBar * TICKS_PER_BAR);
-                    
-                    const vel = settings.velocity ? (t.velocity[patternIdx] || 100) : 100;
+            const tickStart = Math.round(absStartBar * TICKS_PER_BAR);
+            const tickEnd = Math.round(absEndBar * TICKS_PER_BAR);
 
-                    // Decomponiamo in On/Off per permettere sovrapposizioni
-                    allEvents.push({ type: 'on', pitch: noteNumber, velocity: vel, tick: startTick });
-                    allEvents.push({ type: 'off', pitch: noteNumber, velocity: 0, tick: endTick });
-                }
-            }
-        });
+            const currentStepDuration = tickEnd - tickStart;
 
-        // 2. ORDINAMENTO CRONOLOGICO (Obbligatorio per il merge)
-        allEvents.sort((a, b) => a.tick - b.tick);
+            if (isActive) {
+                const finalVelocity = settings.velocity ? (t.velocity[patternIdx] || 100) : 100;
 
-        // 3. SCRITTURA (Calcolo Delta)
-        let lastCursorTick = 0;
-        allEvents.forEach(evt => {
-            const waitTicks = Math.max(0, evt.tick - lastCursorTick);
-            
-            if (evt.type === 'on') {
-                mergedTrack.addEvent(new MidiWriter.NoteOnEvent({
-                    pitch: [evt.pitch],
-                    velocity: evt.velocity,
-                    wait: 'T' + waitTicks,
-                    channel: 10
+                // A) TRACCIA SINGOLA
+                track.addEvent(new MidiWriter.NoteEvent({
+                    pitch: [noteNumber],
+                    duration: 'T' + currentStepDuration,
+                    wait: 'T' + waitBuffer,
+                    channel: 10,
+                    velocity: finalVelocity
                 }));
+                waitBuffer = 0;
+
+                // B) MERGE POOL
+                mergePool.push({
+                    pitch: noteNumber,
+                    velocity: finalVelocity,
+                    startTick: tickStart,
+                    endTick: tickStart + currentStepDuration
+                });
+
             } else {
-                mergedTrack.addEvent(new MidiWriter.NoteOffEvent({
-                    pitch: [evt.pitch],
-                    duration: '0',
-                    wait: 'T' + waitTicks,
-                    channel: 10
-                }));
+                waitBuffer += currentStepDuration;
             }
-            lastCursorTick = evt.tick;
-        });
-        
-        midiTracks.push(mergedTrack);
-    } 
-    
-    // =========================================================
-    // BRANCH B: MULTITRACK (IL TUO CODICE ORIGINALE RIPRISTINATO)
-    // =========================================================
-    else {
-        settings.selectedTracks.forEach(tIdx => {
-            const t = tracks[tIdx];
-            if (!t) return;
+        }
+        separateTracks.push(track);
+    });
 
-            const track = new MidiWriter.Track();
-            track.addTrackName(`Track ${tIdx + 1} - ${t.sample.toUpperCase()}`);
+    // 3. SELEZIONE OUTPUT E MERGE
+    let finalTracks = [];
 
-            const noteNumber = midiMap[t.sample] || 36;
-            const totalStepsToExport = t.steps * BARS_TO_EXPORT;
-            
-            let waitBuffer = 0;
-
-            for (let i = 0; i < totalStepsToExport; i++) {
-                const patternIdx = i % t.steps;
-                const isActive = t.pattern[patternIdx] === 1;
-
-                // Calcolo Temporale (Originale)
-                const absStartBar = i / t.steps;
-                const absEndBar = (i + 1) / t.steps;
-
-                const tickStart = Math.round(absStartBar * TICKS_PER_BAR);
-                const tickEnd = Math.round(absEndBar * TICKS_PER_BAR);
-
-                const currentStepDuration = tickEnd - tickStart;
-
-                if (isActive) {
-                    // Unica aggiunta: controllo opzione Velocity
-                    const finalVelocity = settings.velocity ? (t.velocity[patternIdx] || 100) : 100;
-
-                    track.addEvent(new MidiWriter.NoteEvent({
-                        pitch: [noteNumber],
-                        duration: 'T' + currentStepDuration,
-                        wait: 'T' + waitBuffer,
-                        channel: 10,
-                        velocity: finalVelocity
-                    }));
-                    waitBuffer = 0;
-                } else {
-                    waitBuffer += currentStepDuration;
-                }
-            }
-            midiTracks.push(track);
-        });
+    if (settings.merge) {
+        console.log("Generazione traccia unica (Atomic Standard)...");
+        const mergedTrack = createMergedTrackFromPoolAtomic(mergePool, currentBpm, TOTAL_TICKS_LENGTH);
+        finalTracks = [mergedTrack];
+    } else {
+        finalTracks = separateTracks;
     }
 
-    // GENERAZIONE FILE
+    // 4. DOWNLOAD
     try {
-        const writer = new MidiWriter.Writer(midiTracks);
+        const writer = new MidiWriter.Writer(finalTracks);
         const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         
-        // Nome file dinamico come richiesto
         let filename = "actam_poly";
         if (settings.merge) filename += "_merged";
-        
-        // Aggiungo suffisso velocity per feedback
         filename += settings.velocity ? "_vel-ON.mid" : "_vel-OFF.mid";
 
         a.download = filename;
@@ -936,6 +894,84 @@ function downloadMIDI(options) {
         alert("Errore generazione MIDI.");
     }
 }
+
+// --- HELPER FUNZIONE (ATOMIC EVENTS - TIMING CORRETTO) ---
+function createMergedTrackFromPoolAtomic(pool, bpm, totalLengthTicks) {
+    const mergedTrack = new MidiWriter.Track();
+    mergedTrack.addTrackName('Actam Merged Kit');
+    mergedTrack.setTempo(bpm);
+    mergedTrack.setTimeSignature(4, 4);
+
+    let atomicEvents = [];
+    
+    // 1. Decomposizione: Crea eventi On e Off separati
+    pool.forEach(note => {
+        const start = Math.round(note.startTick);
+        const end = Math.round(note.endTick);
+        
+        atomicEvents.push({ 
+            type: 'on', 
+            tick: start, 
+            pitch: note.pitch, 
+            velocity: note.velocity 
+        });
+        
+        atomicEvents.push({ 
+            type: 'off', 
+            tick: end, 
+            pitch: note.pitch, 
+            velocity: 0 
+        });
+    });
+
+    // 2. Marker Finale
+    atomicEvents.push({ 
+        type: 'marker', 
+        tick: Math.round(totalLengthTicks) 
+    });
+
+    // 3. Ordinamento Temporale Rigoroso
+    atomicEvents.sort((a, b) => {
+        if (a.tick !== b.tick) return a.tick - b.tick;
+        
+        const typePriority = { 'off': 0, 'on': 1, 'marker': 2 };
+        return typePriority[a.type] - typePriority[b.type];
+    });
+
+    // 4. Scrittura Sequenziale (Delta Time) - FIX CRITICO QUI
+    let lastTickCursor = 0;
+
+    atomicEvents.forEach(evt => {
+        let deltaWait = evt.tick - lastTickCursor;
+        if (deltaWait < 0) deltaWait = 0;
+
+        if (evt.type === 'marker') {
+            mergedTrack.addEvent(new MidiWriter.MarkerEvent({
+                text: 'End',
+                wait: 'T' + deltaWait  // FIX: Aggiunto 'T' + 
+            }));
+        } else if (evt.type === 'on') {
+            mergedTrack.addEvent(new MidiWriter.NoteOnEvent({
+                pitch: [evt.pitch],
+                velocity: evt.velocity,
+                wait: 'T' + deltaWait,  // FIX: Aggiunto 'T' +
+                channel: 10
+            }));
+        } else if (evt.type === 'off') {
+            mergedTrack.addEvent(new MidiWriter.NoteOffEvent({
+                pitch: [evt.pitch],
+                velocity: 0,
+                wait: 'T' + deltaWait,  // FIX: Aggiunto 'T' +
+                channel: 10
+            }));
+        }
+
+        lastTickCursor = evt.tick;
+    });
+
+    return mergedTrack;
+}
+
 
 // BINDING PULSANTE
 // Usa replaceChild per garantire che non ci siano listener duplicati (safe-mode)

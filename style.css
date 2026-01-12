@@ -103,6 +103,7 @@ body {
   flex-direction: column;
   align-items: center;
   width: var(--knob-size);
+
 }
 
 .knob-wrapper {
@@ -235,7 +236,7 @@ body {
 .velocity-slider.inactive-slider {
   /*accent-color: #444 !important; /* Sovrascrive il colore della traccia */
   /*opacity: 0.25;                 /* Feedback visivo di 'disabilitato' */
-  filter: brightness(20%);       /* Rimuove saturazione */
+  filter: brightness(15%);       /* Rimuove saturazione */
 }
 
 /* Rendi visibile il numero (0-127) */
