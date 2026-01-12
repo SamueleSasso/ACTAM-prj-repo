@@ -575,11 +575,23 @@ function initInterface() {
 
         track.userSampleOpt = null;
 
+
         // File input per sample custom
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = 'audio/*';
-        fileInput.style.marginTop = "6px";
+        fileInput.style.display = 'none';
+
+        // creazione bottone custom 
+        const customLoadBtn = document.createElement('button');
+        customLoadBtn.textContent = "LOAD SAMPLE";
+        customLoadBtn.className = 'custom-file-btn';
+
+
+        customLoadBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        soundGroup.appendChild(customLoadBtn);
         soundGroup.appendChild(fileInput);
 
         trackContainer.appendChild(soundGroup);
