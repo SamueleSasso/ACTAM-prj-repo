@@ -245,8 +245,8 @@ function renderVelocityBars() {
 function initVelocityPanel() {
 
     const velocityTrackSelect = document.getElementById('velocityTrackSelect');
-
-    // Cambio traccia nel select
+    
+    //Cambio traccia nel select
     velocityTrackSelect.addEventListener('change', (e) => {
         currentVelocityTrack = parseInt(e.target.value);
         renderVelocityBars();
@@ -978,6 +978,29 @@ function createMergedTrackFromPoolAtomic(pool, bpm, totalLengthTicks) {
 /* =================================================================
    8. UI MODALE & BINDINGS (Sostituisce il vecchio binding)
    ================================================================= */
+
+// ==========================================
+// TASTO RESET (GLOBAL BINDING)
+// Incollalo alla fine del file, fuori da tutto
+// ==========================================
+const globalResetBtn = document.getElementById('resetVelocityBtn');
+
+if (globalResetBtn) {
+    globalResetBtn.addEventListener('click', function() {
+        console.log("Tasto Reset Premuto!"); // Controllo in console
+        
+        // 1. Reset Logico
+        if (tracks[currentVelocityTrack] && tracks[currentVelocityTrack].velocity) {
+            tracks[currentVelocityTrack].velocity.fill(100);
+        }
+        
+        // 2. Reset Visivo (Ridisegna le barre)
+        // Assicurati che questa funzione sia raggiungibile
+        renderVelocityBars(); 
+    });
+} else {
+    console.error("ERRORE: Il tasto resetVelocityBtn non è stato trovato nell'HTML.");
+}
 
 // Elementi DOM
 const modalOverlay = document.getElementById('midiModal');

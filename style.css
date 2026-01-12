@@ -1,10 +1,10 @@
 :root {
   --bg: #0b0b0d;
   --panel-bg: #111217;
-  --track-1: #ff4bd8;
-  --track-2: #6be0ff;
-  --track-3: #2ecc71;
-  --track-4: #f39c12;
+  --track-1: #be4986;
+  --track-2: #4398b0;
+  --track-3: #84b832;
+  --track-4: #c67d24;
   --knob-size: 60px;
   --knob-bg: #1a1b20;
   --indicator-color: #e74c3c;
@@ -160,7 +160,7 @@ body {
   padding: 8px;
   background: #0d0d0f;
   border: 1px solid #333;
-  color: white;
+  color: #cecece;
   border-radius: 6px;
   box-sizing: border-box;
   font-family: inherit;
@@ -189,7 +189,7 @@ body {
 
 .velocity-header h3 {
   margin: 0;
-  color: #fff;
+  color: #cecece;
   font-size: 13px;
   letter-spacing: 1px;
 }
@@ -198,6 +198,11 @@ body {
   width: 120px;
   padding: 4px;
   height: 28px;
+  /* Aggiungi queste righe per uniformarlo al tema dark */
+  background: #0d0d0f; 
+  border: 1px solid #333;
+  color: #cecece;
+  border-radius: 4px;
 }
 
 /* Wrapper per tenere vicini Bottone e Select */
@@ -270,7 +275,7 @@ body {
 .velocity-slider.inactive-slider {
   /*accent-color: #444 !important; /* Sovrascrive il colore della traccia */
   /*opacity: 0.25;                 /* Feedback visivo di 'disabilitato' */
-  filter: brightness(15%);       /* Rimuove saturazione */
+  filter: brightness(25%);       /* Rimuove saturazione */
 }
 
 /* Rendi visibile il numero (0-127) */
@@ -405,18 +410,18 @@ button:hover {
 }
 
 #startBtn {
-  background: #2ecc71;
-  color: #000;
+  background: #42c679;
+  color: #333;
 }
 
 #stopBtn {
-  background: #e74c3c;
-  color: #fff;
+  background: #d34f40;
+  color: #333;
 }
 
 #exportBtn {
-  background: #3498db;
-  color: #fff;
+  background: #9144ba;
+  color: #333;
 }
 
 .status-msg {
@@ -502,7 +507,7 @@ button:hover {
 
 /* Stile Checkbox custom */
 input[type="checkbox"] {
-  accent-color: #3498db;
+  accent-color: #9144ba;
   width: 22px; /* Checkbox più grande */
   height: 22px;
   cursor: pointer;
@@ -539,7 +544,7 @@ input[type="checkbox"] {
 }
 
 .cycle-btn.active {
-  background: #3498db;
+  background: #9144ba;
   color: #fff;
   font-weight: bold;
 }
@@ -551,11 +556,40 @@ input[type="checkbox"] {
 }
 
 #confirmExportBtn {
-  background: #3498db;
+  background: #9144ba;
   color: #fff;
   width: 100%;
   padding: 16px; /* Bottone conferma più alto */
   font-size: 16px;
   letter-spacing: 1px;
   border-radius: 8px;
+}
+
+/*personalizzazione scelta file di sistema*/
+
+/* 1. Nasconde il testo "Nessun file selezionato" */
+.standard-input-group input[type="file"] {
+  color: transparent; /* Rende invisibile il testo accanto al bottone */
+  width: 100%;        /* Occupa tutto lo spazio disponibile */
+}
+
+/* 2. Stile del bottone "Scegli file" vero e proprio */
+.standard-input-group input[type="file"]::file-selector-button {
+  background-color: #0d0d0f; /* Sfondo scuro (uguale alle select) */
+  color: #bbb;               /* Colore testo */
+  border: 1px solid #333;    /* Bordo sottile */
+  padding: 0px 12px;         /* Spaziatura interna */
+  border-radius: 4px;        /* Angoli smussati */
+  cursor: pointer;           /* Manina al passaggio del mouse */
+  font-family: inherit;      /* Usa lo stesso font del sito */
+  margin-right: 15px;        /*spazio a destra*/
+  /*margin-bottom: 15px;       /* Spazio sotto */
+  transition: all 0.2s ease; /* Transizione fluida */
+}
+
+/* 3. Effetto Hover sul bottone */
+.standard-input-group input[type="file"]::file-selector-button:hover {
+  background-color: #222;    /* Leggermente più chiaro al passaggio */
+  color: #fff;               /* Testo bianco */
+  border-color: #666;        /* Bordo più evidente */
 }
