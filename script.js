@@ -766,114 +766,174 @@ startBtn.onclick = startSequencer;
 document.getElementById('stopBtn').onclick = stopSequencer;
 
 /* =================================================================
-   7. MIDI EXPORT ENGINE (ENGINEERING GRADE v2.0)
+   7. MIDI EXPORT ENGINE (HYBRID: ORIGINAL MULTITRACK + SORTED MERGE)
    ================================================================= */
 
 const exportBtn = document.getElementById('exportBtn');
 
-function downloadMIDI() {
-    // SECURITY CHECK: Verifica caricamento libreria
+function downloadMIDI(options) {
     if (typeof MidiWriter === 'undefined') {
-        alert("Errore critico: Libreria MidiWriter non caricata. Controlla la connessione o il link CDN.");
+        alert("Errore critico: Libreria MidiWriter non caricata.");
         return;
     }
 
-    // CONFIGURAZIONE
-    // Mapping strumenti (GM Standard Channel 10)
-    const midiMap = {
-        kick: 36,  // C1
-        snare: 38, // D1
-        hihat: 42, // F#1
-        tom: 47    // B1
+    // 1. SETUP OPZIONI (con fallback per sicurezza)
+    const settings = {
+        velocity: (options && options.velocity !== undefined) ? options.velocity : true,
+        merge: (options && options.merge !== undefined) ? options.merge : false,
+        selectedTracks: (options && options.selectedTracks) ? options.selectedTracks : [0, 1, 2, 3]
     };
 
-    // Costanti temporali
-    const PPQ = 128; // Standard MIDI resolution
-    const TICKS_PER_BAR = PPQ * 4; // 512 Ticks per 4/4
-    const BARS_TO_EXPORT = 4; // Lunghezza Loop
+    if (settings.selectedTracks.length === 0) {
+        alert("Nessuna traccia selezionata.");
+        return;
+    }
 
-    // Inizializzazione Tracce MIDI
+    const midiMap = { kick: 36, snare: 38, hihat: 42, tom: 47 };
+    const PPQ = 128; 
+    const TICKS_PER_BAR = PPQ * 4; // 512
+    const BARS_TO_EXPORT = 4;
+    
     const midiTracks = [];
 
-    // ITERAZIONE TRACCE
-    // Usa l'array globale 'tracks' definito nella sezione 2
-    tracks.forEach(t => {
-        const track = new MidiWriter.Track();
+    // =========================================================
+    // BRANCH A: MERGE (Logica adattata per traccia unica)
+    // =========================================================
+    if (settings.merge) {
+        const mergedTrack = new MidiWriter.Track();
+        mergedTrack.addTrackName(`Actam Merged`);
+        
+        let allEvents = [];
 
-        // Metadata Traccia
-        track.addTrackName(`Track ${t.id + 1} - ${t.sample.toUpperCase()}`);
+        // 1. RACCOLTA EVENTI (Usa la TUA matematica originale)
+        settings.selectedTracks.forEach(tIdx => {
+            const t = tracks[tIdx];
+            if (!t) return;
 
-        // Parametri per il calcolo
-        const noteNumber = midiMap[t.sample] || 36; // Fallback a Kick se undefined
-        const totalStepsToExport = t.steps * BARS_TO_EXPORT;
+            const noteNumber = midiMap[t.sample] || 36;
+            const totalSteps = t.steps * BARS_TO_EXPORT;
 
-        // BUFFER DI ATTESA (Accumulatore Delta-Time)
-        // Gestisce i silenzi accumulando la durata degli step vuoti
-        // per applicarli come ritardo (wait) alla prima nota attiva successiva.
-        let waitBuffer = 0;
+            for (let i = 0; i < totalSteps; i++) {
+                const patternIdx = i % t.steps;
+                if (t.pattern[patternIdx] === 1) {
+                    
+                    // Calcolo Tick esatto (Original Logic)
+                    const absStartBar = i / t.steps;
+                    const absEndBar = (i + 1) / t.steps;
+                    
+                    const startTick = Math.round(absStartBar * TICKS_PER_BAR);
+                    const endTick = Math.round(absEndBar * TICKS_PER_BAR);
+                    
+                    const vel = settings.velocity ? (t.velocity[patternIdx] || 100) : 100;
 
-        for (let i = 0; i < totalStepsToExport; i++) {
-            // 1. Logica Pattern (Rotazione + Euclideo)
-            const patternIdx = i % t.steps;
-            const isActive = t.pattern[patternIdx] === 1;
-
-            // 2. Calcolo Temporale di Precisione (Floating Point Compensation)
-            // Calcoliamo i tick assoluti di inizio e fine per questo step specifico
-            // Differenza = Durata esatta (intero) che compensa gli arrotondamenti
-            const absStartBar = i / t.steps;
-            const absEndBar = (i + 1) / t.steps;
-
-            const tickStart = Math.round(absStartBar * TICKS_PER_BAR);
-            const tickEnd = Math.round(absEndBar * TICKS_PER_BAR);
-
-            const currentStepDuration = tickEnd - tickStart;
-
-            // 3. Scrittura Eventi
-            if (isActive) {
-
-                // per assicurarsi che sia un intero valido, fallback a 100
-                const currentVelocity = t.velocity[patternIdx] || 100;
-
-                // NOTA ON
-                track.addEvent(new MidiWriter.NoteEvent({
-                    pitch: [noteNumber],
-                    duration: 'T' + currentStepDuration, // Durata nota piena (Legato)
-                    wait: 'T' + waitBuffer,              // Applica il ritardo accumulato
-                    channel: 10,
-                    velocity: currentVelocity // <--- ASSEGNAZIONE VELOCITY DINAMICA
-                }));
-
-                // Reset buffer dopo aver "speso" l'attesa
-                waitBuffer = 0;
-            } else {
-                // NOTA OFF (Pausa)
-                // Non scriviamo nulla sul MIDI, accumuliamo solo il tempo
-                waitBuffer += currentStepDuration;
+                    // Decomponiamo in On/Off per permettere sovrapposizioni
+                    allEvents.push({ type: 'on', pitch: noteNumber, velocity: vel, tick: startTick });
+                    allEvents.push({ type: 'off', pitch: noteNumber, velocity: 0, tick: endTick });
+                }
             }
-        }
+        });
 
-        midiTracks.push(track);
-    });
+        // 2. ORDINAMENTO CRONOLOGICO (Obbligatorio per il merge)
+        allEvents.sort((a, b) => a.tick - b.tick);
+
+        // 3. SCRITTURA (Calcolo Delta)
+        let lastCursorTick = 0;
+        allEvents.forEach(evt => {
+            const waitTicks = Math.max(0, evt.tick - lastCursorTick);
+            
+            if (evt.type === 'on') {
+                mergedTrack.addEvent(new MidiWriter.NoteOnEvent({
+                    pitch: [evt.pitch],
+                    velocity: evt.velocity,
+                    wait: 'T' + waitTicks,
+                    channel: 10
+                }));
+            } else {
+                mergedTrack.addEvent(new MidiWriter.NoteOffEvent({
+                    pitch: [evt.pitch],
+                    duration: '0',
+                    wait: 'T' + waitTicks,
+                    channel: 10
+                }));
+            }
+            lastCursorTick = evt.tick;
+        });
+        
+        midiTracks.push(mergedTrack);
+    } 
+    
+    // =========================================================
+    // BRANCH B: MULTITRACK (IL TUO CODICE ORIGINALE RIPRISTINATO)
+    // =========================================================
+    else {
+        settings.selectedTracks.forEach(tIdx => {
+            const t = tracks[tIdx];
+            if (!t) return;
+
+            const track = new MidiWriter.Track();
+            track.addTrackName(`Track ${tIdx + 1} - ${t.sample.toUpperCase()}`);
+
+            const noteNumber = midiMap[t.sample] || 36;
+            const totalStepsToExport = t.steps * BARS_TO_EXPORT;
+            
+            let waitBuffer = 0;
+
+            for (let i = 0; i < totalStepsToExport; i++) {
+                const patternIdx = i % t.steps;
+                const isActive = t.pattern[patternIdx] === 1;
+
+                // Calcolo Temporale (Originale)
+                const absStartBar = i / t.steps;
+                const absEndBar = (i + 1) / t.steps;
+
+                const tickStart = Math.round(absStartBar * TICKS_PER_BAR);
+                const tickEnd = Math.round(absEndBar * TICKS_PER_BAR);
+
+                const currentStepDuration = tickEnd - tickStart;
+
+                if (isActive) {
+                    // Unica aggiunta: controllo opzione Velocity
+                    const finalVelocity = settings.velocity ? (t.velocity[patternIdx] || 100) : 100;
+
+                    track.addEvent(new MidiWriter.NoteEvent({
+                        pitch: [noteNumber],
+                        duration: 'T' + currentStepDuration,
+                        wait: 'T' + waitBuffer,
+                        channel: 10,
+                        velocity: finalVelocity
+                    }));
+                    waitBuffer = 0;
+                } else {
+                    waitBuffer += currentStepDuration;
+                }
+            }
+            midiTracks.push(track);
+        });
+    }
 
     // GENERAZIONE FILE
     try {
         const writer = new MidiWriter.Writer(midiTracks);
         const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
-
-        // Download forzato
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'euclidean_poly_rhythm.mid';
+        
+        // Nome file dinamico come richiesto
+        let filename = "actam_poly";
+        if (settings.merge) filename += "_merged";
+        
+        // Aggiungo suffisso velocity per feedback
+        filename += settings.velocity ? "_vel-ON.mid" : "_vel-OFF.mid";
+
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
-
-        // Garbage collection
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
+        
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
 
     } catch (e) {
-        console.error("Errore durante la scrittura del file MIDI:", e);
-        alert("Errore nella generazione del file MIDI. Vedi console.");
+        console.error("Errore scrittura MIDI:", e);
+        alert("Errore generazione MIDI.");
     }
 }
 
@@ -938,14 +998,20 @@ cycleBtns.forEach(btn => {
 
 // 4. GESTIONE CONFERMA
 confirmExportBtn.addEventListener('click', () => {
-    exportSettings.velocity = document.getElementById('optVelocity').checked;
-    exportSettings.merge = document.getElementById('optMerge').checked;
+    // Raccogliamo i dati dalla modale
+    const options = {
+        velocity: document.getElementById('optVelocity').checked, // TRUE o FALSE
+        merge: document.getElementById('optMerge').checked, // <--- NUOVO PARAMETRO
+        selectedTracks: exportSettings.selectedTracks // Mantiene la selezione fatta coi bottoni 1-2-3-4
+    };
+    
+    console.log("Exporting...", options); // Debug per essere sicuri
 
-    // Chiudi modale
+    // Chiudiamo la modale
     modalOverlay.classList.add('hidden');
-
-    // Avvia export (la logica interna verrà aggiornata successivamente)
-    downloadMIDI();
+    
+    // Chiamiamo la TUA funzione passandogli le opzioni
+    downloadMIDI(options); 
 });
 
 // Init
