@@ -9,7 +9,7 @@ const masterPanner = new Tone.Panner(0).toDestination();
 
 // Lista campioni
 const samples = {
-    kick: "https://tonejs.github.io/audio/drum-samples/CR78/kick.mp3",
+    kick: "https://raw.githubusercontent.com/dadymazz/fist-repository/main/909-kick.wav",
     snare: "https://raw.githubusercontent.com/dadymazz/fist-repository/main/909-kick.wav",
     hihat: "https://tonejs.github.io/audio/drum-samples/CR78/hihat.mp3",
     tom: "https://tonejs.github.io/audio/drum-samples/CR78/tom1.mp3",
@@ -82,13 +82,14 @@ let isPlaying = false;
    3. KNOB CLASS
    ================================================================= */
 class Knob {
-    constructor(container, label, min, max, initialValue, colorVar, callback, step = 1) {
+    constructor(container, label, min, max, initialValue, colorVar, callback, step = 1, blockDuringPlayback = false) {
         this.container = container;
         this.min = min;
         this.max = max;
         this.value = initialValue;
         this.callback = callback;
         this.step = step;
+        this.blockDuringPlayback = blockDuringPlayback;
 
         // UI Config
         this.minAngle = -135;
@@ -124,6 +125,10 @@ class Knob {
 
     attachEvents() {
         this.knobEl.addEventListener('pointerdown', (e) => {
+            if (isPlaying && this.blockDuringPlayback) {
+                this.knobEl.style.cursor = 'not-allowed';
+                return
+            }
             this.dragging = true;
             this.startY = e.clientY;
             this.startValue = this.value;
@@ -588,7 +593,7 @@ function initInterface() {
             if (currentVelocityTrack === index) {
                 renderVelocityBars();
             }
-        });
+        }, 1, true); // Blocca durante playback
         const pulsesK = new Knob(pulsesRow.lastChild, 'PULSES', 0, track.steps, track.pulses, track.colorVar, (v) => {
             track.pulses = v;
             regenerateTrack(track);
@@ -1116,3 +1121,18 @@ applyPreset('custom');
 initInterface();
 initVelocityPanel();
 initAdsrPanel();
+
+
+// WELCOME MODAL ON LOAD PAGE
+(function () {
+    const welcomeModal = document.getElementById('welcomeModal');
+    const welcomeCloseBtn = document.getElementById('welcomeCloseBtn');
+    if (!welcomeModal || !welcomeCloseBtn) return;
+
+    // Always show modal on page load
+    welcomeModal.classList.remove('hidden');
+
+    welcomeCloseBtn.addEventListener('click', () => {
+        welcomeModal.classList.add('hidden');
+    });
+})();
