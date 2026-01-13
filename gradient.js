@@ -106,12 +106,23 @@ class GradientBackground {
       uResolution: {
         value: new THREE.Vector2(window.innerWidth, window.innerHeight)
       },
-      uColor1: { value: new THREE.Vector3(0.945, 0.353, 0.133) }, // F15A22 - Orange
-      uColor2: { value: new THREE.Vector3(0.039, 0.055, 0.153) }, // 0a0e27 - Navy Blue
-      uColor3: { value: new THREE.Vector3(0.945, 0.353, 0.133) }, // F15A22 - Orange
-      uColor4: { value: new THREE.Vector3(0.039, 0.055, 0.153) }, // 0a0e27 - Navy Blue
-      uColor5: { value: new THREE.Vector3(0.945, 0.353, 0.133) }, // F15A22 - Orange
-      uColor6: { value: new THREE.Vector3(0.039, 0.055, 0.153) }, // 0a0e27 - Navy Blue
+        // #aa3973 -> R:0.667, G:0.224, B:0.451
+        uColor1: { value: new THREE.Vector3(0.667, 0.224, 0.451) }, 
+
+        // #1a7189 -> R:0.102, G:0.443, B:0.537
+        uColor2: { value: new THREE.Vector3(0.102, 0.443, 0.537) }, 
+
+        // #719d2a -> R:0.443, G:0.616, B:0.165
+        uColor3: { value: new THREE.Vector3(0.443, 0.616, 0.165) }, 
+
+        // #b06b16 -> R:0.690, G:0.420, B:0.086
+        uColor4: { value: new THREE.Vector3(0.690, 0.420, 0.086) }, 
+
+        /*uColor5: { value: new THREE.Vector3(0.945, 0.353, 0.133) },*/
+        uColor5: { value: new THREE.Vector3(0.443, 0.616, 0.165) }, 
+
+        /*uColor6: { value: new THREE.Vector3(0.039, 0.055, 0.153) },*/
+        uColor6: { value: new THREE.Vector3(0.102, 0.443, 0.537) },
       uSpeed: { value: 1.2 }, // Faster animation
       uIntensity: { value: 1.8 },
       uTouchTexture: { value: null },
@@ -455,35 +466,19 @@ class App {
     this.colorSchemes = {
       1: {
         // Orange + Navy Blue
-        color1: new THREE.Vector3(0.945, 0.353, 0.133), // F15A22 - Orange
-        color2: new THREE.Vector3(0.039, 0.055, 0.153) // 0a0e27 - Navy Blue
+        // #aa3973 -> R:0.667, G:0.224, B:0.451
+        color1: new THREE.Vector3(0.667, 0.224, 0.451), 
+
+        // #1a7189 -> R:0.102, G:0.443, B:0.537
+        color2: new THREE.Vector3(0.102, 0.443, 0.537),
+
+        // #719d2a -> R:0.443, G:0.616, B:0.165
+        color3: new THREE.Vector3(0.443, 0.616, 0.165), 
+
+        // #b06b16 -> R:0.690, G:0.420, B:0.086
+        color4: new THREE.Vector3(0.690, 0.420, 0.086), 
       },
-      2: {
-        // Turquoise + Coral Red-Orange
-        color1: new THREE.Vector3(1.0, 0.424, 0.314), // FF6C50 - Coral Red-Orange
-        color2: new THREE.Vector3(0.251, 0.878, 0.816) // 40E0D0 - Turquoise
-      },
-      3: {
-        // Orange + Navy + Turquoise (identical to scheme 1 but with turquoise added)
-        color1: new THREE.Vector3(0.945, 0.353, 0.133), // F15A22 - Orange
-        color2: new THREE.Vector3(0.039, 0.055, 0.153), // 0a0e27 - Navy Blue
-        color3: new THREE.Vector3(0.251, 0.878, 0.816) // 40E0D0 - Turquoise
-      },
-      4: {
-        // Based on Scheme 3: F26633 + 2D6B6D + D1AF9C
-        color1: new THREE.Vector3(0.949, 0.4, 0.2), // F26633 - Orange/Coral
-        color2: new THREE.Vector3(0.176, 0.42, 0.427), // 2D6B6D - Teal/Blue-Green
-        color3: new THREE.Vector3(0.82, 0.686, 0.612) // D1AF9C - Beige/Peach
-      },
-      5: {
-        // F15A22 + 004238 + F15A22 + 000000 + F15A22 + 000000
-        color1: new THREE.Vector3(0.945, 0.353, 0.133), // F15A22 - Orange
-        color2: new THREE.Vector3(0.0, 0.259, 0.22), // 004238 - Dark Teal (0, 66, 56)
-        color3: new THREE.Vector3(0.945, 0.353, 0.133), // F15A22 - Orange
-        color4: new THREE.Vector3(0.0, 0.0, 0.0), // 000000 - Black
-        color5: new THREE.Vector3(0.945, 0.353, 0.133), // F15A22 - Orange
-        color6: new THREE.Vector3(0.0, 0.0, 0.0) // 000000 - Black
-      }
+      
     };
     this.currentScheme = 1;
 
@@ -495,40 +490,6 @@ class App {
     this.currentScheme = scheme;
     const colors = this.colorSchemes[scheme];
     const uniforms = this.gradientBackground.uniforms;
-
-    // Update all color uniforms
-    if (scheme === 3) {
-      // Scheme 3: Orange + Navy + Turquoise (identical to scheme 1 but with turquoise)
-      uniforms.uColor1.value.copy(colors.color1); // Orange
-      uniforms.uColor2.value.copy(colors.color2); // Navy
-      uniforms.uColor3.value.copy(colors.color3); // Turquoise
-      uniforms.uColor4.value.copy(colors.color1); // Orange
-      uniforms.uColor5.value.copy(colors.color2); // Navy
-      uniforms.uColor6.value.copy(colors.color3); // Turquoise
-    } else if (scheme === 4) {
-      // Scheme 4: Based on Scheme 3 with F26633, 2D6B6D, D1AF9C
-      uniforms.uColor1.value.copy(colors.color1); // F26633 - Orange/Coral
-      uniforms.uColor2.value.copy(colors.color2); // 2D6B6D - Teal/Blue-Green
-      uniforms.uColor3.value.copy(colors.color3); // D1AF9C - Beige/Peach
-      uniforms.uColor4.value.copy(colors.color1); // F26633 - Orange/Coral
-      uniforms.uColor5.value.copy(colors.color2); // 2D6B6D - Teal/Blue-Green
-      uniforms.uColor6.value.copy(colors.color3); // D1AF9C - Beige/Peach
-    } else if (scheme === 5) {
-      // Scheme 5: F15A22 + 004238 + F15A22 + 000000 + F15A22 + 000000
-      uniforms.uColor1.value.copy(colors.color1); // F15A22 - Orange
-      uniforms.uColor2.value.copy(colors.color2); // 004238 - Dark Teal
-      uniforms.uColor3.value.copy(colors.color3); // F15A22 - Orange
-      uniforms.uColor4.value.copy(colors.color4); // 000000 - Black
-      uniforms.uColor5.value.copy(colors.color5); // F15A22 - Orange
-      uniforms.uColor6.value.copy(colors.color6); // 000000 - Black
-    } else {
-      uniforms.uColor1.value.copy(colors.color1);
-      uniforms.uColor2.value.copy(colors.color2);
-      uniforms.uColor3.value.copy(colors.color1);
-      uniforms.uColor4.value.copy(colors.color2);
-      uniforms.uColor5.value.copy(colors.color1);
-      uniforms.uColor6.value.copy(colors.color2);
-    }
 
     // Update background color and base color
     if (scheme === 1) {

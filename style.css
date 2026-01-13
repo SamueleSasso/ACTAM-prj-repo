@@ -66,14 +66,14 @@ body {
 }
 
 
-/* SEQUENER */
+/* SEQUENCER */
 :root {
   --bg: #0b0b0d;
-  --panel-bg: #111217;
-  --track-1: #be4986;
-  --track-2: #4398b0;
-  --track-3: #84b832;
-  --track-4: #c67d24;
+  --panel-bg: #1112176b;
+  --track-1: #aa3973;
+  --track-2: #1a7189;
+  --track-3: #719d2a;
+  --track-4: #b06b16;
   --knob-size: 60px;
   --knob-bg: #1a1b20;
   --indicator-color: #e74c3c;
@@ -97,6 +97,7 @@ body {
   width: 100%;
   height: 100%;
   z-index:10 !important;
+  color: transparent
 }
 
 .panel {
@@ -104,7 +105,7 @@ body {
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
-  background: var(--panel-bg);
+  
   width: 95vw;
   height: 92vh;
   padding: 0 2vw;
@@ -129,7 +130,7 @@ body {
 }
 
 .controls {
-  width: 180px;
+  width: 237px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -174,6 +175,7 @@ body {
   flex-direction: column;
   align-items: center;
   width: var(--knob-size);
+  flex-shrink: 0
 }
 
 .knob-wrapper {
@@ -261,16 +263,16 @@ body {
 /* ===== BUTTOM ROW ===== */
 .bottom-modules-row {
   display: flex;
-  flex-direction: row;
+  flex-direction: row; 
   justify-content: space-between;
-  width: 890px;
+  width: 1000px;
   margin-top: 15px;
 }
 
 /* ===== VELOCITY PANEL ===== */
 .velocity-panel {
-  width: 600px;
-  height: 240px;
+  width: 700px;
+  height: 220px;
   max-width: none;
   box-sizing: border-box;
   background: rgba(0, 0, 0, 0.25);
@@ -367,11 +369,11 @@ body {
 
 .velocity-bars {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   align-items: flex-end;
-  height: 12vh;
+  height: 140px;
   background:transparent;
-  padding: 10px;
+  padding: 10px 5px;
   border-radius: 8px;
   border: 1px solid #222;
 }
@@ -379,6 +381,7 @@ body {
 .velocity-bar-container {
   flex: 1;
   display: flex;
+  min-width: 0;
   flex-direction: column;
   align-items: center;
   gap: 2px;
@@ -424,7 +427,7 @@ body {
   -webkit-appearance: none;
   appearance: none;
 
-  width: 25px;
+  width: 18px;
   height: 5px;
 
   border-radius: 50%;
@@ -510,10 +513,9 @@ svg {
   flex-direction: column;
   gap: 15px;
 
-  /* CHANGED: Negative margin pulls buttons up into the SVG's empty space */
-  margin-top: -30px;
+  margin-top: 10px;
   z-index: 10;
-  /* Ensures buttons are clickable if they overlap slightly */
+  
 }
 
 .buttons-row {
@@ -762,9 +764,9 @@ input[type="checkbox"] {
 /* style ADSR section */
 .adsr-panel {
   width: 270px;
-  height: 240px;
+  height: 220px;
   margin: 0;
-  background: #0e0e11;
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 12px;
   border: 1px solid #222;
   flex: none;
@@ -772,6 +774,7 @@ input[type="checkbox"] {
   align-items: center;
   box-sizing: border-box;
   padding: 10px;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
 }
 
 .adsr-header {
