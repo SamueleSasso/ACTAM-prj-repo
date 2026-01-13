@@ -101,17 +101,15 @@ body {
 }
 
 .panel {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  align-items: center;
 
-  width: 95vw;
-  height: 92vh;
-  padding: 0 2vw;
+  padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-  box-sizing: border-box;
+
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+
+
 }
 
 /* ===== LEFT SECTION ===== */
@@ -135,10 +133,10 @@ body {
   flex-direction: column;
   justify-content: space-between;
   gap: 15px;
-  background: #0e0e11;
+  background: rgba(13, 13, 15, 0.6);
   padding: 20px 15px;
   border-radius: 12px;
-  border: 1px solid #222;
+
   min-height: 40vh;
   box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
 }
@@ -278,7 +276,7 @@ body {
   background: rgba(0, 0, 0, 0.25);
   padding: 15px;
   border-radius: 12px;
-  border: 1px solid #222;
+
   margin: 0;
   flex: none;
   box-sizing: border-box;
@@ -447,16 +445,6 @@ body {
 }
 
 
-/* Compatibilità Firefox 
-.velocity-slider::-moz-range-thumb {
-  width: 5px;
-  height: 5px;
-  border: none;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-}
-  */
 
 
 .velocity-label {
@@ -503,7 +491,7 @@ body {
 
   /* CHANGED: Black Box for contrast */
   background: rgba(0, 0, 0, 0.5);
-  border: 1px solid #222;
+
   border-radius: 20px;
   /* Slight rounding for the box */
   box-shadow: inset 5px 5px 50px rgba(0, 0, 0, 0.8);
@@ -521,10 +509,12 @@ svg {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  background: rgba(13, 13, 15, 0.6);
+  border-radius: 12px;
 
   margin-top: 10px;
   z-index: 10;
-
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
 }
 
 .buttons-row {
@@ -630,7 +620,7 @@ button:hover {
 
 .modal-container {
   background: var(--panel-bg);
-  border: 1px solid #333;
+
   border-radius: 16px;
   /* Aumentato */
   /* SCALING: Finestra più larga (da 320px a 420px) */
@@ -777,7 +767,6 @@ input[type="checkbox"] {
   margin: 0;
   background: rgba(0, 0, 0, 0.25);
   border-radius: 12px;
-  border: 1px solid #222;
   flex: none;
   flex-direction: column;
   align-items: center;
@@ -1275,30 +1264,4 @@ body {
   --knob-size: 70px;
   --knob-bg: #1a1b20;
   --indicator-color: #e74c3c;
-}
-
-/* Aggiungiamo l'effetto vetro al pannello principale */
-.panel {
-  background: var(--panel-bg);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-
-  /* Effetto vetro (Glassmorphism) */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  /* Per Safari */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  /* Bordo sottile elegante */
-}
-
-/* Se vuoi che anche i sotto-pannelli (controls, global-controls) siano trasparenti: */
-.controls,
-.global-controls {
-  background: rgba(13, 13, 15, 0.6);
-  /* Più scuro ma sempre trasparente */
-  /* ... resto delle proprietà esistenti ... */
 }
