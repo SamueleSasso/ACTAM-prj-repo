@@ -80,9 +80,8 @@ class TouchTexture {
     intensity *= point.force;
 
     const radius = this.radius;
-    let color = `${((point.vx + 1) / 2) * 255}, ${
-      ((point.vy + 1) / 2) * 255
-    }, ${intensity * 255}`;
+    let color = `${((point.vx + 1) / 2) * 255}, ${((point.vy + 1) / 2) * 255
+      }, ${intensity * 255}`;
     let offset = this.size * 5;
     this.ctx.shadowOffsetX = offset;
     this.ctx.shadowOffsetY = offset;
@@ -106,23 +105,23 @@ class GradientBackground {
       uResolution: {
         value: new THREE.Vector2(window.innerWidth, window.innerHeight)
       },
-        // #aa3973 -> R:0.667, G:0.224, B:0.451
-        uColor1: { value: new THREE.Vector3(0.667, 0.224, 0.451) }, 
+      // #aa3973 -> R:0.667, G:0.224, B:0.451
+      uColor1: { value: new THREE.Vector3(0.667, 0.224, 0.451) },
 
-        // #1a7189 -> R:0.102, G:0.443, B:0.537
-        uColor2: { value: new THREE.Vector3(0.102, 0.443, 0.537) }, 
+      // #1a7189 -> R:0.102, G:0.443, B:0.537
+      uColor2: { value: new THREE.Vector3(0.102, 0.443, 0.537) },
 
-        // #719d2a -> R:0.443, G:0.616, B:0.165
-        uColor3: { value: new THREE.Vector3(0.443, 0.616, 0.165) }, 
+      // #719d2a -> R:0.443, G:0.616, B:0.165
+      uColor3: { value: new THREE.Vector3(0.443, 0.616, 0.165) },
 
-        // #b06b16 -> R:0.690, G:0.420, B:0.086
-        uColor4: { value: new THREE.Vector3(0.690, 0.420, 0.086) }, 
+      // #b06b16 -> R:0.690, G:0.420, B:0.086
+      uColor4: { value: new THREE.Vector3(0.690, 0.420, 0.086) },
 
-        /*uColor5: { value: new THREE.Vector3(0.945, 0.353, 0.133) },*/
-        uColor5: { value: new THREE.Vector3(0.443, 0.616, 0.165) }, 
+      /*uColor5: { value: new THREE.Vector3(0.945, 0.353, 0.133) },*/
+      uColor5: { value: new THREE.Vector3(0.443, 0.616, 0.165) },
 
-        /*uColor6: { value: new THREE.Vector3(0.039, 0.055, 0.153) },*/
-        uColor6: { value: new THREE.Vector3(0.102, 0.443, 0.537) },
+      /*uColor6: { value: new THREE.Vector3(0.039, 0.055, 0.153) },*/
+      uColor6: { value: new THREE.Vector3(0.102, 0.443, 0.537) },
       uSpeed: { value: 1.2 }, // Faster animation
       uIntensity: { value: 1.8 },
       uTouchTexture: { value: null },
@@ -467,18 +466,18 @@ class App {
       1: {
         // Orange + Navy Blue
         // #aa3973 -> R:0.667, G:0.224, B:0.451
-        color1: new THREE.Vector3(0.667, 0.224, 0.451), 
+        color1: new THREE.Vector3(0.667, 0.224, 0.451),
 
         // #1a7189 -> R:0.102, G:0.443, B:0.537
         color2: new THREE.Vector3(0.102, 0.443, 0.537),
 
         // #719d2a -> R:0.443, G:0.616, B:0.165
-        color3: new THREE.Vector3(0.443, 0.616, 0.165), 
+        color3: new THREE.Vector3(0.443, 0.616, 0.165),
 
         // #b06b16 -> R:0.690, G:0.420, B:0.086
-        color4: new THREE.Vector3(0.690, 0.420, 0.086), 
+        color4: new THREE.Vector3(0.690, 0.420, 0.086),
       },
-      
+
     };
     this.currentScheme = 1;
 
@@ -716,10 +715,10 @@ function hexToRgb(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
-        r: parseInt(result[1], 16) / 255,
-        g: parseInt(result[2], 16) / 255,
-        b: parseInt(result[3], 16) / 255
-      }
+      r: parseInt(result[1], 16) / 255,
+      g: parseInt(result[2], 16) / 255,
+      b: parseInt(result[3], 16) / 255
+    }
     : null;
 }
 

@@ -5,9 +5,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Euclidean Poly-Sequencer — Master Edition</title>
-  
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/midi-writer-js@3.1.1/browser/midiwriter.min.js"></script>
   <link rel="stylesheet" href="style.css">
@@ -43,9 +43,9 @@
 
           <div class="velocity-panel">
             <div class="velocity-header">
-            <h3>VELOCITY</h3>
-             <div class="velocity-controls-wrapper">  
-              <button id="resetVelocityBtn" class="reset-vel-btn">RESET</button>
+              <h3>VELOCITY</h3>
+              <div class="velocity-controls-wrapper">
+                <button id="resetVelocityBtn" class="reset-vel-btn">RESET</button>
                 <select id="velocityTrackSelect">
                   <option value="0">Track 1</option>
                   <option value="1">Track 2</option>
@@ -55,7 +55,7 @@
               </div>
             </div>
             <div class="velocity-bars" id="velocityBars"></div>
-            </div>
+          </div>
           <div class="adsr-panel">
             <div class="adsr-header">
               <h3>ENVELOPE</h3>
@@ -146,11 +146,11 @@
 
   <!--APPLY GARDIENT-->
   <script src="gradient.js"></script>
-  
+
   <script>
-      // ESEMPIO (controlla come funziona il tuo gradient.js):
-      const gradient = new Gradient();
-      gradient.initGradient('#gradient-canvas');
+    // ESEMPIO (controlla come funziona il tuo gradient.js):
+    const gradient = new Gradient();
+    gradient.initGradient('#gradient-canvas');
   </script>
 
   <script src="script.js"></script>

@@ -402,7 +402,7 @@ function renderVelocityBars() {
 function initVelocityPanel() {
 
     const velocityTrackSelect = document.getElementById('velocityTrackSelect');
-    
+
     //Cambio traccia nel select
     velocityTrackSelect.addEventListener('change', (e) => {
         currentVelocityTrack = parseInt(e.target.value);
@@ -1050,8 +1050,8 @@ function downloadMIDI(options) {
     // Recupero BPM dall'UI
     const currentBpm = parseInt(document.getElementById('bpm').value) || 120;
 
-    const separateTracks = []; 
-   
+    const separateTracks = [];
+
     // 2. GENERAZIONE CORE (Ciclo Unico)
     settings.selectedTracks.forEach(tIdx => {
         const t = tracks[tIdx];
@@ -1065,10 +1065,10 @@ function downloadMIDI(options) {
 
         // MODIFICA: Mappatura fissa su nota 37 per tutte le tracce
         const noteNumber = 37;
-        
+
         const totalStepsToExport = t.steps * BARS_TO_EXPORT;
-        
-        let waitBuffer = 0; 
+
+        let waitBuffer = 0;
 
         for (let i = 0; i < totalStepsToExport; i++) {
             const patternIdx = i % t.steps;
@@ -1094,7 +1094,7 @@ function downloadMIDI(options) {
                     channel: 10,
                     velocity: finalVelocity
                 }));
-                
+
                 // Reset buffer dopo aver scritto la nota
                 waitBuffer = 0;
 
@@ -1116,14 +1116,14 @@ function downloadMIDI(options) {
         const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        
+
         let filename = "actam_poly";
         filename += settings.velocity ? "_vel-ON.mid" : "_vel-OFF.mid";
 
         a.download = filename;
         document.body.appendChild(a);
         a.click();
-        
+
         setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
 
     } catch (e) {
@@ -1146,17 +1146,17 @@ function downloadMIDI(options) {
 const globalResetBtn = document.getElementById('resetVelocityBtn');
 
 if (globalResetBtn) {
-    globalResetBtn.addEventListener('click', function() {
+    globalResetBtn.addEventListener('click', function () {
         console.log("Tasto Reset Premuto!"); // Controllo in console
-        
+
         // 1. Reset Logico
         if (tracks[currentVelocityTrack] && tracks[currentVelocityTrack].velocity) {
             tracks[currentVelocityTrack].velocity.fill(100);
         }
-        
+
         // 2. Reset Visivo (Ridisegna le barre)
         // Assicurati che questa funzione sia raggiungibile
-        renderVelocityBars(); 
+        renderVelocityBars();
     });
 } else {
     console.error("ERRORE: Il tasto resetVelocityBtn non è stato trovato nell'HTML.");
@@ -1223,14 +1223,14 @@ confirmExportBtn.addEventListener('click', () => {
         merge: document.getElementById('optMerge').checked, // <--- NUOVO PARAMETRO
         selectedTracks: exportSettings.selectedTracks // Mantiene la selezione fatta coi bottoni 1-2-3-4
     };
-    
+
     console.log("Exporting...", options); // Debug per essere sicuri
 
     // Chiudiamo la modale
     modalOverlay.classList.add('hidden');
-    
+
     // Chiamiamo la TUA funzione passandogli le opzioni
-    downloadMIDI(options); 
+    downloadMIDI(options);
 });
 
 // Init
