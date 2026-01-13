@@ -9,10 +9,14 @@ const masterPanner = new Tone.Panner(0).toDestination();
 
 // Lista campioni
 const samples = {
-    kick: "https://raw.githubusercontent.com/dadymazz/fist-repository/main/909-kick.wav",
-    snare: "https://raw.githubusercontent.com/dadymazz/fist-repository/main/909-kick.wav",
-    hihat: "https://tonejs.github.io/audio/drum-samples/CR78/hihat.mp3",
-    tom: "https://tonejs.github.io/audio/drum-samples/CR78/tom1.mp3",
+    Kick: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/Kick.wav",
+    Snare: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/Snare.wav",
+    ClosedHat: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/ClosedHat.wav",
+    OpenHat: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/OpenHat.wav",
+    Ride: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/Ride.wav",
+    MidTom: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/MidTom.wav",
+    LowTom: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/LowTom.wav",
+    RimShot: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/RimShot.wav",
 };
 
 // Timeout di sicurezza
@@ -28,10 +32,10 @@ setTimeout(() => {
    2. APP STATE
    ================================================================= */
 const tracks = [
-    { id: 0, colorVar: '--track-1', radius: 260, steps: 16, pulses: 4, offset: 0, sample: 'kick', pattern: [], playingIdx: -1, timer: null },
-    { id: 1, colorVar: '--track-2', radius: 200, steps: 12, pulses: 5, offset: 0, sample: 'snare', pattern: [], playingIdx: -1, timer: null },
-    { id: 2, colorVar: '--track-3', radius: 140, steps: 8, pulses: 3, offset: 0, sample: 'hihat', pattern: [], playingIdx: -1, timer: null },
-    { id: 3, colorVar: '--track-4', radius: 80, steps: 5, pulses: 2, offset: 0, sample: 'tom', pattern: [], playingIdx: -1, timer: null }
+    { id: 0, colorVar: '--track-1', radius: 260, steps: 16, pulses: 4, offset: 0, sample: 'Kick', pattern: [], playingIdx: -1, timer: null },
+    { id: 1, colorVar: '--track-2', radius: 200, steps: 12, pulses: 5, offset: 0, sample: 'Snare', pattern: [], playingIdx: -1, timer: null },
+    { id: 2, colorVar: '--track-3', radius: 140, steps: 8, pulses: 3, offset: 0, sample: 'ClosedHat', pattern: [], playingIdx: -1, timer: null },
+    { id: 3, colorVar: '--track-4', radius: 80, steps: 5, pulses: 2, offset: 0, sample: 'MidTom', pattern: [], playingIdx: -1, timer: null }
 ];
 tracks.forEach(track => {
     track.velocity = new Array(track.steps).fill(100); // Inizializza velocity a 100 per ogni step
@@ -189,57 +193,68 @@ class Knob {
 }
 
 /* PRESET DEFINITION */
-/* =================================================================
-   PRESET DEFINITIONS
-   ================================================================= */
 const presets = {
-    ambient: {
-        bpm: 90,
+    dub_techno: {
+        // Focus: Atmospheric textures using Ride and LowTom
+        bpm: 118,
         tracks: [
-            { steps: 16, pulses: 4, offset: 0, sample: 'kick', adsr: { attack: 0.05, decay: 0.3, sustain: 0.5, release: 0.5 } },
-            { steps: 12, pulses: 3, offset: 2, sample: 'snare', adsr: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.3 } },
-            { steps: 8, pulses: 2, offset: 1, sample: 'hihat', adsr: { attack: 0.005, decay: 0.15, sustain: 0.2, release: 0.2 } },
-            { steps: 5, pulses: 1, offset: 0, sample: 'tom', adsr: { attack: 0.02, decay: 0.25, sustain: 0.4, release: 0.4 } }
+            // Track 1: Deep anchor
+            { steps: 16, pulses: 4, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.3, sustain: 0.8, release: 0.2 } },
+            // Track 2: The characteristic "Chord" stab replacement using LowTom
+            { steps: 16, pulses: 3, offset: 2, sample: 'LowTom', adsr: { attack: 0.05, decay: 0.1, sustain: 0.4, release: 0.8 } },
+            // Track 3: Driving high-end texture
+            { steps: 16, pulses: 16, offset: 0, sample: 'Ride', adsr: { attack: 0.02, decay: 0.1, sustain: 0.3, release: 0.6 } },
+            // Track 4: Syncopated Rim
+            { steps: 12, pulses: 5, offset: 6, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.1, release: 0.05 } }
         ]
     },
-    techno: {
-        bpm: 128,
+    minimal: {
+        // Focus: Micro-percussion (Clicky, short sounds)
+        bpm: 126,
         tracks: [
-            { steps: 16, pulses: 8, offset: 0, sample: 'kick', adsr: { attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.1 } },
-            { steps: 16, pulses: 4, offset: 4, sample: 'snare', adsr: { attack: 0.005, decay: 0.08, sustain: 0.6, release: 0.08 } },
-            { steps: 16, pulses: 12, offset: 2, sample: 'hihat', adsr: { attack: 0.002, decay: 0.05, sustain: 0.7, release: 0.05 } },
-            { steps: 8, pulses: 4, offset: 1, sample: 'tom', adsr: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1 } }
+            { steps: 16, pulses: 4, offset: 0, sample: 'Kick', adsr: { attack: 0.001, decay: 0.1, sustain: 0.6, release: 0.1 } },
+            // Track 2: Dry, woody percussion
+            { steps: 16, pulses: 2, offset: 4, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.1, release: 0.02 } },
+            // Track 3: Tight closed hat
+            { steps: 13, pulses: 9, offset: 2, sample: 'ClosedHat', adsr: { attack: 0.001, decay: 0.03, sustain: 0.0, release: 0.03 } },
+            // Track 4: Occasional tom accent
+            { steps: 32, pulses: 3, offset: 16, sample: 'MidTom', adsr: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.1 } }
         ]
     },
-    polyrhythm: {
-        bpm: 110,
+    jungle: {
+        // Focus: Breakbeat simulation using complex Euclidean offsets
+        bpm: 165,
         tracks: [
-            { steps: 16, pulses: 3, offset: 0, sample: 'kick', adsr: { attack: 0.01, decay: 0.15, sustain: 0.6, release: 0.15 } },
-            { steps: 12, pulses: 5, offset: 3, sample: 'snare', adsr: { attack: 0.01, decay: 0.12, sustain: 0.5, release: 0.12 } },
-            { steps: 8, pulses: 3, offset: 2, sample: 'hihat', adsr: { attack: 0.005, decay: 0.1, sustain: 0.4, release: 0.1 } },
-            { steps: 5, pulses: 2, offset: 1, sample: 'tom', adsr: { attack: 0.01, decay: 0.13, sustain: 0.45, release: 0.13 } }
+            { steps: 16, pulses: 7, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.2 } },
+            // Track 2: Ghost snares
+            { steps: 16, pulses: 5, offset: 2, sample: 'Snare', adsr: { attack: 0.01, decay: 0.1, sustain: 0.4, release: 0.1 } },
+            // Track 3: Fast shuffling
+            { steps: 8, pulses: 6, offset: 1, sample: 'ClosedHat', adsr: { attack: 0.005, decay: 0.05, sustain: 0.1, release: 0.05 } },
+            // Track 4: Open hat on the off-beat
+            { steps: 16, pulses: 4, offset: 2, sample: 'OpenHat', adsr: { attack: 0.01, decay: 0.1, sustain: 0.4, release: 0.3 } }
         ]
     },
-    industrial: {
-        bpm: 140,
+    poly_groove: {
+        // Focus: Interlocking Toms (Melodic rhythm)
+        bpm: 112,
         tracks: [
-            { steps: 16, pulses: 6, offset: 0, sample: 'kick', adsr: { attack: 0.008, decay: 0.12, sustain: 0.7, release: 0.12 } },
-            { steps: 16, pulses: 8, offset: 8, sample: 'snare', adsr: { attack: 0.01, decay: 0.1, sustain: 0.65, release: 0.1 } },
-            { steps: 16, pulses: 14, offset: 4, sample: 'hihat', adsr: { attack: 0.003, decay: 0.06, sustain: 0.75, release: 0.06 } },
-            { steps: 8, pulses: 3, offset: 3, sample: 'tom', adsr: { attack: 0.012, decay: 0.11, sustain: 0.55, release: 0.11 } }
+            { steps: 5, pulses: 2, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2 } },
+            { steps: 7, pulses: 3, offset: 1, sample: 'LowTom', adsr: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.3 } },
+            { steps: 11, pulses: 4, offset: 3, sample: 'MidTom', adsr: { attack: 0.01, decay: 0.15, sustain: 0.5, release: 0.2 } },
+            { steps: 13, pulses: 5, offset: 5, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.2, release: 0.05 } }
         ]
     },
     custom: {
+        // Clean slate
         bpm: 120,
         tracks: [
-            { steps: 16, pulses: 4, offset: 0, sample: 'kick', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
-            { steps: 12, pulses: 5, offset: 0, sample: 'snare', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
-            { steps: 8, pulses: 3, offset: 0, sample: 'hihat', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
-            { steps: 5, pulses: 2, offset: 0, sample: 'tom', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } }
+            { steps: 16, pulses: 4, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
+            { steps: 16, pulses: 0, offset: 0, sample: 'Ride', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
+            { steps: 16, pulses: 0, offset: 0, sample: 'RimShot', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
+            { steps: 16, pulses: 0, offset: 0, sample: 'LowTom', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } }
         ]
     }
 };
-
 let currentPreset = 'custom';
 function applyPreset(presetName) {
     const preset = presets[presetName];
@@ -261,6 +276,41 @@ function applyPreset(presetName) {
         track.adsr = { ...presetTrack.adsr };
         regenerateTrack(track);
     });
+
+    // Sync knobs UI with model (steps / pulses / offset)
+    preset.tracks.forEach((presetTrack, idx) => {
+        const track = tracks[idx];
+        if (track.stepsKnob) {
+            track.stepsKnob.setValue(track.steps);
+        }
+        if (track.pulsesKnob) {
+            track.pulsesKnob.updateLimits(0, track.steps);
+            track.pulsesKnob.setValue(track.pulses);
+        }
+        if (track.offsetKnob) {
+            track.offsetKnob.updateLimits(0, Math.max(0, track.steps - 1));
+            track.offsetKnob.setValue(track.offset);
+        }
+    });
+
+
+    // Update sample selects
+    preset.tracks.forEach((_, idx) => {
+        const track = tracks[idx];
+        const sel = track.sampleSelect;
+        if (sel) {
+            // ensure option exists, then set value and trigger change
+            if (![...sel.options].some(o => o.value === track.sample)) {
+                const opt = document.createElement('option');
+                opt.value = track.sample;
+                opt.innerText = track.sample;
+                sel.appendChild(opt);
+            }
+            sel.value = track.sample;
+            sel.dispatchEvent(new Event('change'));
+        }
+    });
+
 
     // Re-render UI
     renderVelocityBars();
@@ -571,9 +621,9 @@ function initInterface() {
             if (key === track.sample) opt.selected = true;
             select.appendChild(opt);
         });
-        soundGroup.appendChild(select);
+        soundGroup.appendChild(select)
 
-        track.userSampleOpt = null;
+        track.sampleSelect = select;
 
 
         // File input per sample custom
@@ -597,7 +647,7 @@ function initInterface() {
         trackContainer.appendChild(soundGroup);
 
         // Inizializza i knob nelle rispettive righe
-        new Knob(stepsRow.lastChild, 'STEPS', 1, 32, track.steps, track.colorVar, (v) => {
+        const stepsK = new Knob(stepsRow.lastChild, 'STEPS', 1, 32, track.steps, track.colorVar, (v) => {
             track.steps = v;
             pulsesK.updateLimits(0, track.steps);
             offsetK.updateLimits(0, track.steps - 1);
@@ -606,6 +656,7 @@ function initInterface() {
                 renderVelocityBars();
             }
         }, 1, true); // Blocca durante playback
+
         const pulsesK = new Knob(pulsesRow.lastChild, 'PULSES', 0, track.steps, track.pulses, track.colorVar, (v) => {
             track.pulses = v;
             regenerateTrack(track);
@@ -622,6 +673,9 @@ function initInterface() {
                 renderVelocityBars();
             }
         });
+        track.stepsKnob = stepsK;
+        track.pulsesKnob = pulsesK;
+        track.offsetKnob = offsetK;
 
         // Cambia sample (default o custom)
         select.addEventListener('change', (e) => {
