@@ -5,12 +5,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Euclidean Poly-Sequencer — Master Edition</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/midi-writer-js@3.1.1/browser/midiwriter.min.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+  <canvas id="gradient-canvas" data-transition-in></canvas>
+
   <div class="wrap">
     <div class="panel">
       
@@ -76,11 +81,6 @@
         </div>
 
         <div class="option-row">
-          <label for="optMerge" class="option-label">Merge in Single Track</label>
-          <input type="checkbox" id="optMerge">
-        </div>
-
-        <div class="option-row">
           <span class="option-label">Tracks Selection</span>
           <div class="cycle-selector">
             <button class="cycle-btn active" data-val="1">1</button>
@@ -97,6 +97,13 @@
     </div>
   </div>
 
+  <script src="gradient.js"></script>
+  
+  <script>
+      // ESEMPIO (controlla come funziona il tuo gradient.js):
+      const gradient = new Gradient();
+      gradient.initGradient('#gradient-canvas');
+  </script>
 
   <script src="script.js"></script>
 </body>
