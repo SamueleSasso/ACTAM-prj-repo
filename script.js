@@ -945,6 +945,23 @@ function stopSequencer() {
 startBtn.onclick = startSequencer;
 document.getElementById('stopBtn').onclick = stopSequencer;
 
+// SPACEBAR BUTTON BINDING
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+
+        // prevent the browser from scolling when pressing space
+        e.preventDefault();
+
+        // toggle play/stop
+        if (isPlaying) {
+            stopSequencer();
+        } else {
+            startSequencer();
+        }
+    }
+});
+
+
 /* =================================================================
    7. MIDI EXPORT ENGINE (ENGINEERING GRADE v2.0)
    ================================================================= */
