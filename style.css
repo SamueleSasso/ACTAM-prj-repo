@@ -330,17 +330,18 @@ body {
 
 .velocity-bars {
   display: flex;
-  gap: 6px;
+  gap: 1px;
   align-items: flex-end;
   height: 12vh;
   background: #111217;
-  padding: 10px;
+  padding: 10px 5px;
   border-radius: 8px;
   border: 1px solid #222;
 }
 
 .velocity-bar-container {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -379,15 +380,15 @@ body {
   appearance: none;
 
   /* Dimensioni pallino */
-  width: 8px;
-  height: 8px;
+  width: 18px;
+  height: 5px;
 
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
-  /*box-shadow: 0 1px 4px rgba(0,0,0,0.5);*/
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   margin-top: -6px;
-  /* Centratura verticale */
+
 }
 
 /* Compatibilità Firefox */
@@ -432,6 +433,7 @@ body {
   height: 100%;
   padding: 0;
   box-sizing: border-box;
+
 }
 
 .visual {
@@ -462,7 +464,7 @@ svg {
   gap: 15px;
 
   /* CHANGED: Negative margin pulls buttons up into the SVG's empty space */
-  margin-top: -30px;
+  margin-top: 30px;
   z-index: 10;
   /* Ensures buttons are clickable if they overlap slightly */
 }
