@@ -70,10 +70,10 @@ body {
 :root {
   --bg: #0b0b0d;
   --panel-bg: #111217;
-  --track-1: #ff4bd8;
-  --track-2: #6be0ff;
-  --track-3: #2ecc71;
-  --track-4: #f39c12;
+  --track-1: #be4986;
+  --track-2: #4398b0;
+  --track-3: #84b832;
+  --track-4: #c67d24;
   --knob-size: 60px;
   --knob-bg: #1a1b20;
   --indicator-color: #e74c3c;
@@ -96,6 +96,7 @@ body {
   align-items: center;
   width: 100%;
   height: 100%;
+  z-index:10 !important;
 }
 
 .panel {
@@ -138,6 +139,7 @@ body {
   border-radius: 12px;
   border: 1px solid #222;
   min-height: 40vh;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
 }
 
 .track-title {
@@ -271,13 +273,14 @@ body {
   height: 240px;
   max-width: none;
   box-sizing: border-box;
-  background: #0e0e11;
+  background: rgba(0, 0, 0, 0.25);
   padding: 15px;
   border-radius: 12px;
   border: 1px solid #222;
   margin: 0;
   flex: none;
   box-sizing: border-box;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
 }
 
 .velocity-header {
@@ -289,15 +292,15 @@ body {
 
 .velocity-header h3 {
   margin: 0;
-  color: #fff;
+  color: #cecece;
   font-size: 13px;
   letter-spacing: 1px;
 }
 
 .velocity-header select {
   width: 120px;
-  height: 32px;
-  padding: 0 10px;
+  height: 32px; /*4px*/
+  padding: 0 10px; /*28px*/
   box-sizing: border-box;
 
 
@@ -319,6 +322,40 @@ body {
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 
+/* Wrapper per tenere vicini Bottone e Select */
+.velocity-controls-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Spazio tra bottone e select */
+}
+
+/* Stile del bottone RESET */
+.reset-vel-btn {
+  background: #222; /* Sfondo scuro neutro */
+  color: #bbb;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 0 10px;
+  height: 28px; /* Stessa altezza della select */
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: none; /* Rimuove shadow generiche dei button globali se presenti */
+}
+
+.reset-vel-btn:hover {
+  background: #333;
+  color: #fff;
+  border-color: #666;
+}
+
+.reset-vel-btn:active {
+  background: #111;
+  transform: translateY(1px);
+}
+
 .velocity-header select:hover,
 .velocity-header select:focus {
   border-color: #666;
@@ -333,7 +370,7 @@ body {
   gap: 6px;
   align-items: flex-end;
   height: 12vh;
-  background: #111217;
+  background:transparent;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #222;
@@ -359,6 +396,14 @@ body {
   cursor: pointer;
 }
 
+/* --- AGGIUNTA: Slider Inattivi --- */
+/* Rende lo slider grigio e trasparente quando il pulse è spento */
+.velocity-slider.inactive-slider {
+  /*accent-color: #444 !important; /* Sovrascrive il colore della traccia */
+  /*opacity: 0.25;                 /* Feedback visivo di 'disabilitato' */
+  filter: brightness(25%);       /* Rimuove saturazione */
+}
+
 /* Rendi visibile il numero (0-127) */
 .velocity-value {
   display: block;
@@ -373,32 +418,35 @@ body {
   /* Evita interferenze col mouse */
 }
 
+
 /* Stile del pallino (Thumb) */
 .velocity-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
 
-  /* Dimensioni pallino */
-  width: 8px;
-  height: 8px;
+  width: 25px;
+  height: 5px;
 
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
-  /*box-shadow: 0 1px 4px rgba(0,0,0,0.5);*/
+  
   margin-top: -6px;
-  /* Centratura verticale */
+  
 }
 
-/* Compatibilità Firefox */
+
+/* Compatibilità Firefox 
 .velocity-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 5px;
+  height: 5px;
   border: none;
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
 }
+  */
+
 
 .velocity-label {
   display: none;
@@ -442,11 +490,12 @@ body {
   justify-content: center;
 
   /* CHANGED: Black Box for contrast */
-  background: #0e0e11;
+  background: rgba(0, 0, 0, 0.5);
   border: 1px solid #222;
   border-radius: 20px;
   /* Slight rounding for the box */
-  /*box-shadow: inset 0 0 50px rgba(0,0,0,0.8);  Inner shadow for depth */
+  box-shadow: inset 5px 5px 50px rgba(0,0,0,0.8);
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
 }
 
 svg {
@@ -482,7 +531,7 @@ button {
   font-weight: bold;
   font-size: 15px;
   text-transform: uppercase;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
 }
 
 button:hover {
@@ -491,18 +540,18 @@ button:hover {
 }
 
 #startBtn {
-  background: #2ecc71;
-  color: #000;
+  background: #42c679;
+  color: #333;
 }
 
 #stopBtn {
-  background: #e74c3c;
-  color: #fff;
+  background: #d34f40;
+  color: #333;
 }
 
 #exportBtn {
-  background: #3498db;
-  color: #fff;
+  background: #9144ba;
+  color: #333;
 }
 
 .status-msg {
@@ -688,7 +737,7 @@ input[type="checkbox"] {
 }
 
 .cycle-btn.active {
-  background: #3498db;
+  background: #9144ba;
   color: #fff;
   font-weight: bold;
 }
@@ -700,7 +749,7 @@ input[type="checkbox"] {
 }
 
 #confirmExportBtn {
-  background: #3498db;
+  background: #9144ba;
   color: #fff;
   width: 100%;
   padding: 16px;
@@ -808,4 +857,420 @@ input[type="checkbox"] {
 
 .adsr-panel .knob-container.small {
   margin-bottom: 5px;
+}
+
+
+
+/*=============================================================================*/
+/*=============================================================================*/
+/*=============================================================================*/
+/*=============================================================================*/
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  overflow: hidden;
+  font-family: sans-serif;
+}
+#webGLApp {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+.heading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  color: white;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  text-wrap: auto;
+  font-family: "Syne", sans-serif;
+  font-size: clamp(3.5rem, 9vw, 9rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  line-height: 1;
+}
+
+/* Show all options in a grid for comparison */
+.headings-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4rem;
+  width: 80vw;
+  max-width: 1200px;
+  pointer-events: none;
+}
+
+.color-controls {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 10;
+  display: flex;
+  gap: 1rem;
+  pointer-events: auto;
+}
+.color-btn {
+  min-width: 48px;
+  height: 48px;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  color: white;
+  font-family: "Syne", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+.color-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+.color-btn.active {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Color Adjuster Panel */
+.color-adjuster-panel {
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  min-width: 320px;
+  max-width: 400px;
+  pointer-events: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  display: none;
+}
+
+.color-adjuster-panel.open {
+  display: block;
+}
+
+.color-adjuster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.color-adjuster-title {
+  color: white;
+  font-family: "Syne", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.color-adjuster-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.color-adjuster-close:hover {
+  opacity: 0.7;
+}
+
+.color-picker-group {
+  margin-bottom: 1.25rem;
+}
+
+.color-picker-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  color: white;
+  font-family: "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.color-picker-wrapper {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.color-picker-input {
+  width: 60px;
+  height: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.color-picker-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.color-value-display {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  color: white;
+  font-family: "Inter", monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  cursor: text;
+  user-select: all;
+  transition: all 0.3s ease;
+}
+
+.color-value-display:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.color-value-display:focus {
+  outline: none;
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.copy-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  color: white;
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.copy-btn.copied {
+  background: rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.color-adjuster-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 0.75rem;
+}
+
+.export-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: white;
+  font-family: "Syne", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.export-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.toggle-adjuster-btn {
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  z-index: 100;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-family: "Syne", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  pointer-events: auto;
+}
+
+.toggle-adjuster-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.footer {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: white;
+  font-family: "Syne", sans-serif;
+  font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+  pointer-events: auto;
+}
+.footer a {
+  color: white;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+.footer a:hover {
+  opacity: 0.7;
+}
+.custom-cursor {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  border: 2px solid white;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1000;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s ease, height 0.2s ease, border-width 0.2s ease;
+  background: transparent;
+  will-change: transform;
+}
+.custom-cursor::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+}
+
+/* --- AGGIUNTA PER IL BACKGROUND --- */
+#gradient-canvas {
+  position: fixed; /* Lo blocca sullo schermo */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0; /* Lo manda DIETRO a tutto il resto */
+  
+  /* Se il tuo gradient.js usa variabili CSS per i colori, definiscile qui: */
+  --gradient-color-1: #ff4bd8;
+  --gradient-color-2: #6be0ff;
+  --gradient-color-3: #2ecc71;
+  --gradient-color-4: #f39c12;
+}
+
+/* --- MODIFICHE ALLA UI ESISTENTE --- */
+
+:root {
+  /* Rendiamo il background base trasparente */
+  --bg: transparent; 
+  
+  /* Cambiamo il colore del pannello in semitrasparente (RGBA) */
+  /* Prima era #111217, ora aggiungiamo 0.85 di opacità */
+  --panel-bg: rgba(17, 18, 23, 0.75); 
+  
+  /* Mantieni le altre variabili uguali */
+  --track-1: #ff4bd8;
+  --track-2: #6be0ff;
+  --track-3: #2ecc71;
+  --track-4: #f39c12;
+  --knob-size: 70px;
+  --knob-bg: #1a1b20;
+  --indicator-color: #e74c3c;
+}
+
+/* Aggiungiamo l'effetto vetro al pannello principale */
+.panel {
+  background: var(--panel-bg);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  
+  /* Effetto vetro (Glassmorphism) */
+  backdrop-filter: blur(12px); 
+  -webkit-backdrop-filter: blur(12px); /* Per Safari */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Bordo sottile elegante */
+}
+
+/* Se vuoi che anche i sotto-pannelli (controls, global-controls) siano trasparenti: */
+.controls, .global-controls {
+  background: rgba(13, 13, 15, 0.6); /* Più scuro ma sempre trasparente */
+  /* ... resto delle proprietà esistenti ... */
 }
