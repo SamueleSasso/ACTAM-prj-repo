@@ -395,7 +395,7 @@ function applyPreset(presetName) {
 
     currentPreset = presetName;
     statusEl.textContent = `PRESET: ${presetName.toUpperCase()}`;
-    statusEl.style.color = "#3498db";
+    statusEl.style.color = "#ffffff";
 }
 
 // Preset button bindings
