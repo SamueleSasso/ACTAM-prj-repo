@@ -995,7 +995,7 @@ document.addEventListener('keydown', (e) => {
 
 
 /* =================================================================
-   MIDI EXPORT ENGINE (FIXED: MERGE TIMING CORRECTED)
+   MIDI EXPORT ENGINE
    ================================================================= */
 
 const exportBtn = document.getElementById('exportBtn');
@@ -1189,7 +1189,7 @@ confirmExportBtn.addEventListener('click', () => {
         velocity: document.getElementById('optVelocity').checked,
 
         //MERGE PERCHEEEE
-        merge: document.getElementById('optMerge').checked,
+        //  merge: document.getElementById('optMerge').checked,
         selectedTracks: exportSettings.selectedTracks
     };
 
