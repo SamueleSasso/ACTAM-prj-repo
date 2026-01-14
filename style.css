@@ -1,3 +1,18 @@
+/* ===== ROOT ===== */
+
+:root {
+  --bg: transparent;
+  --panel-bg: rgba(17, 18, 23, 0.75);
+  --track-1: #ff4bd8;
+  --track-2: #6be0ff;
+  --track-3: #2ecc71;
+  --track-4: #f39c12;
+  --knob-size: 70px;
+  --knob-bg: #1a1b20;
+  --indicator-color: #e74c3c;
+}
+
+
 /* ===== PRESET MENU ===== */
 .preset-menu {
   position: fixed;
@@ -5,8 +20,8 @@
   left: 0;
   right: 0;
   height: 50px;
-  background: linear-gradient(180deg, #111217 0%, #0b0b0d 100%);
-  border-bottom: 1px solid #222;
+  background: rgba(13, 13, 15, 0.6);
+  /*border-bottom: 1px solid #222;*/
   display: flex;
   align-items: center;
   gap: 20px;
@@ -16,9 +31,9 @@
 }
 
 .preset-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: bold;
-  color: #666;
+  color: #cecece;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -32,10 +47,10 @@
   padding: 6px 12px;
   font-size: 11px;
   font-weight: bold;
-  color: #888;
+  color: #d9d9d9b7;
   background: transparent;
-  border: 1px solid #333;
-  border-radius: 4px;
+  border: 1px solid #656565;
+  border-radius: 7px;
   cursor: pointer;
   transition: all 0.2s ease;
   letter-spacing: 0.5px;
@@ -51,9 +66,9 @@
 }
 
 .preset-btn.active {
-  background: #3498db;
+  background: rgb(52, 152, 219);
   color: #fff;
-  border-color: #3498db;
+  border-color: rgb(52, 152, 219);
 }
 
 
@@ -205,7 +220,7 @@ body {
 }
 
 .standard-input-group label {
-  margin-top: 10px;
+  margin-top: 30px;
   display: block;
   font-size: 11px;
   color: #888;
@@ -496,7 +511,7 @@ svg {
   background: rgba(13, 13, 15, 0.6);
   border-radius: 12px;
 
-  margin-top: 10px;
+  margin-top: 25px;
   z-index: 10;
   box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
   align-items: center;
@@ -543,7 +558,7 @@ button:hover {
 }
 
 .status-msg {
-  margin-top: -30px;
+  margin-top: -50px;
   text-align: center;
   font-size: 13px;
   font-weight: bold;
@@ -1226,16 +1241,3 @@ input[type="checkbox"] {
   --gradient-color-4: #f39c12;
 }
 
-/* ===== ROOT ===== */
-
-:root {
-  --bg: transparent;
-  --panel-bg: rgba(17, 18, 23, 0.75);
-  --track-1: #ff4bd8;
-  --track-2: #6be0ff;
-  --track-3: #2ecc71;
-  --track-4: #f39c12;
-  --knob-size: 70px;
-  --knob-bg: #1a1b20;
-  --indicator-color: #e74c3c;
-}
