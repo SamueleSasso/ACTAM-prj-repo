@@ -58,18 +58,7 @@
 
 
 
-/* SEQUENCER */
-:root {
-  --bg: #0b0b0d;
-  --panel-bg: #1112176b;
-  --track-1: #ff4bd8;
-  --track-2: #6be0ff;
-  --track-3: #2ecc71;
-  --track-4: #f39c12;
-  --knob-size: 60px;
-  --knob-bg: #1a1b20;
-  --indicator-color: #e74c3c;
-}
+/* PANEL */
 
 body {
   margin: 0;
@@ -93,7 +82,8 @@ body {
   height: 100%;
   z-index: 10 !important;
   color: transparent;
-  position: relative; /* Senza questo, z-index non funziona! */
+  position: relative;
+
 }
 
 .panel {
@@ -297,9 +287,9 @@ body {
 .velocity-header select {
   width: 120px;
   height: 32px;
-  /*4px*/
+
   padding: 0 10px;
-  /*28px*/
+
   box-sizing: border-box;
 
 
@@ -321,31 +311,27 @@ body {
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 
-/* Wrapper per tenere vicini Bottone e Select */
+
 .velocity-controls-wrapper {
   display: flex;
   align-items: center;
   gap: 8px;
-  /* Spazio tra bottone e select */
 }
 
-/* Stile del bottone RESET */
+/* RESET button */
 .reset-vel-btn {
   background: #222;
-  /* Sfondo scuro neutro */
   color: #bbb;
   border: 1px solid #444;
   border-radius: 4px;
   padding: 0 10px;
   height: 28px;
-  /* Stessa altezza della select */
   font-size: 10px;
   font-weight: bold;
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: none;
-  /* Rimuove shadow generiche dei button globali se presenti */
 }
 
 .reset-vel-btn:hover {
@@ -359,6 +345,7 @@ body {
   transform: translateY(1px);
 }
 
+/* Velocity header and bars */
 .velocity-header select:hover,
 .velocity-header select:focus {
   border-color: #666;
@@ -400,19 +387,12 @@ body {
   cursor: pointer;
 }
 
-/* --- AGGIUNTA: Slider Inattivi --- */
-/* Rende lo slider grigio e trasparente quando il pulse è spento */
 .velocity-slider.inactive-slider {
-  /*accent-color: #444 !important; /* Sovrascrive il colore della traccia */
-  /*opacity: 0.25;                 /* Feedback visivo di 'disabilitato' */
   filter: brightness(25%);
-  /* Rimuove saturazione */
 }
 
-/* Rendi visibile il numero (0-127) */
 .velocity-value {
   display: block;
-  /* Fondamentale: rende visibile il testo */
   font-family: monospace;
   font-size: 10px;
   color: #888;
@@ -420,22 +400,17 @@ body {
   text-align: center;
   width: 100%;
   pointer-events: none;
-  /* Evita interferenze col mouse */
 }
 
 
-/* Stile del pallino (Thumb) */
 .velocity-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-
   width: 18px;
   height: 5px;
-
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
-
   margin-top: -6px;
 
 }
@@ -471,38 +446,38 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0;
-  /* Gap reduced to 0, relying on negative margins */
   height: 100%;
   padding: 0;
   box-sizing: border-box;
   z-index: 50 !important;
 }
 
+/* visual */
 .visual {
   width: 70vh;
   height: 70vh;
   display: grid;
   grid-template-rows: 1fr 10fr;
-  
   align-items: center;
   justify-content: center;
-
-  /* CHANGED: Black Box for contrast */
   background: rgba(0, 0, 0, 0.5);
-
   border-radius: 20px;
-  /* Slight rounding for the box */
   box-shadow: inset 5px 5px 50px rgba(0, 0, 0, 0.8);
   box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+  position: relative;
 }
-#title{
+
+#title {
   color: white;
   text-align: center;
   font-weight: bold;
   font-size: 37px;
   height: 30px;
   text-overflow: ellipsis;
-  letter-spacing:2px;
+  letter-spacing: 2px;
+
+  mix-blend-mode: destination-out;
+
 }
 
 svg {
@@ -510,6 +485,7 @@ svg {
   height: 100%;
 }
 
+/* Global controls (start/stop/midi) */
 .global-controls {
   width: 100%;
   max-width: 450px;
@@ -529,7 +505,7 @@ svg {
   display: flex;
   gap: 15px;
   width: 90%;
-  margin-bottom: 10px ;
+  margin-bottom: 10px;
 }
 
 button {
@@ -551,28 +527,30 @@ button:hover {
 
 #startBtn {
   background: #42c679;
-  color: #333;
- 
+  color: #000000;
+
 }
 
 #stopBtn {
   background: #d34f40;
-  color: #333;
+  color: #000000;
 }
 
 #exportBtn {
   background: #9144ba;
-  color: #333;
+  color: #000000;
 }
 
 .status-msg {
   margin-top: -30px;
   text-align: center;
   font-size: 13px;
+  font-weight: bold;
   color: #666;
   height: 15px;
 }
 
+/* circles and dots */
 .guide {
   fill: none;
   stroke: rgba(255, 255, 255, 0.15);
@@ -649,12 +627,10 @@ button:hover {
 
 .modal-header h3 {
   margin: 0 0 25px 0;
-
   color: #fff;
   text-align: center;
   letter-spacing: 2px;
   font-size: 18px;
-
   border-bottom: 1px solid #222;
   padding-bottom: 15px;
 }
@@ -676,7 +652,6 @@ button:hover {
 input[type="checkbox"] {
   accent-color: #3498db;
   width: 22px;
-
   height: 22px;
   cursor: pointer;
 }
@@ -687,12 +662,10 @@ input[type="checkbox"] {
   width: 100%;
   font-size: 10px;
   padding: 6px 0;
-
   background: #1a1b20;
   color: #888;
   border: 1px solid #333;
   border-radius: 4px;
-
   /* Typography */
   font-weight: bold;
   letter-spacing: 0.5px;
@@ -718,7 +691,6 @@ input[type="checkbox"] {
 .cycle-selector {
   display: flex;
   gap: 10px;
-  /* Più spazio tra i bottoni */
   background: #0e0e11;
   padding: 8px;
   border-radius: 8px;
@@ -730,12 +702,10 @@ input[type="checkbox"] {
   border: none;
   color: #666;
   width: 40px;
-
   height: 40px;
   padding: 0;
   border-radius: 6px;
   font-size: 16px;
-
   cursor: pointer;
   box-shadow: none;
   transition: all 0.2s ease;
@@ -764,13 +734,12 @@ input[type="checkbox"] {
   color: #fff;
   width: 100%;
   padding: 16px;
-
   font-size: 16px;
   letter-spacing: 1px;
   border-radius: 8px;
 }
 
-/* style ADSR section */
+/* ===== ADSR ===== */
 .adsr-panel {
   width: 270px;
   height: 220px;
@@ -806,20 +775,16 @@ input[type="checkbox"] {
   height: 32px;
   padding: 0 10px;
   box-sizing: border-box;
-
-
   background: #0d0d0f;
   border: 1px solid #333;
   border-radius: 6px;
   color: #ddd;
-
   /*font */
   font-family: inherit;
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-
   /*interaction */
   cursor: pointer;
   outline: none;
@@ -857,10 +822,8 @@ input[type="checkbox"] {
 .adsr-panel .label-display {
   display: block;
   order: 10;
-
-  /* 3. Styling to match your UI */
+  color: #999;
   font-size: 9px;
-  color: #ffffff;
   margin-top: 5px;
   letter-spacing: 1px;
   font-weight: bold;
@@ -879,6 +842,7 @@ input[type="checkbox"] {
 }
 
 
+/* ===== HEADER ===== */
 
 #webGLApp {
   position: fixed;
@@ -908,7 +872,6 @@ input[type="checkbox"] {
   line-height: 1;
 }
 
-/* Show all options in a grid for comparison */
 .headings-container {
   position: fixed;
   top: 50%;
@@ -967,7 +930,8 @@ input[type="checkbox"] {
   border-color: rgba(255, 255, 255, 0.6);
 }
 
-/* Color Adjuster Panel */
+/* ===== GRADIENT CANVAS ===== */
+/* Color Adjuster Panel for canvas */
 .color-adjuster-panel {
   position: fixed;
   top: 2rem;
@@ -1231,35 +1195,25 @@ input[type="checkbox"] {
   border-radius: 50%;
 }
 
-/* --- AGGIUNTA PER IL BACKGROUND --- */
+
 #gradient-canvas {
   position: fixed;
-  /* Lo blocca sullo schermo */
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: 0;
-
-
-
   --gradient-color-1: #ff4bd8;
   --gradient-color-2: #6be0ff;
   --gradient-color-3: #2ecc71;
   --gradient-color-4: #f39c12;
 }
 
-/* --- MODIFICHE ALLA UI ESISTENTE --- */
+/* ===== ROOT ===== */
 
 :root {
-  /* Rendiamo il background base trasparente */
   --bg: transparent;
-
-  /* Cambiamo il colore del pannello in semitrasparente (RGBA) */
-  /* Prima era #111217, ora aggiungiamo 0.85 di opacità */
   --panel-bg: rgba(17, 18, 23, 0.75);
-
-  /* Mantieni le altre variabili uguali */
   --track-1: #ff4bd8;
   --track-2: #6be0ff;
   --track-3: #2ecc71;
