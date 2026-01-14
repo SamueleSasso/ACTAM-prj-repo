@@ -58,6 +58,7 @@ const players = new Tone.Players(samples, {
 
 // Player pool for overlapping playback
 const playerPools = {};
+const poolCounters = {};
 Object.keys(samples).forEach((sampleKey, idx) => {
     playerPools[sampleKey] = [];
     for (let i = 0; i < 4; i++) {
@@ -393,7 +394,7 @@ function applyPreset(presetName) {
 
     currentPreset = presetName;
     statusEl.textContent = `PRESET: ${presetName.toUpperCase()}`;
-    statusEl.style.color = "#3498db";
+    statusEl.style.color = "#cecece";
 }
 
 // Preset button bindings
@@ -950,26 +951,40 @@ function playStep(time) {
                     track.customPlayer.start(time);
                 }
                 else if (players.loaded && players.has(track.sample)) {
-                    const pool = playerPools[track.sample];
-                    if (pool) {
-                        let found = false;
-                        for (let i = 0; i < pool.length; i++) {
-                            const p = pool[i];
-                            if (!p.state || p.state === "stopped") {
+                                const pool = playerPools[track.sample];
+                                
+                                // controls if the pool exists and has a player connected
+                                if (pool && pool.length > 0) {
+                                    
+                                    //if the counter doesn't exist we create that now to 0
+                                    if (typeof poolCounters[track.sample] === 'undefined') {
+                                        poolCounters[track.sample] = 0;
+                                    }
 
-                                triggerEnvelope(p._gainNode.gain, time, velocity, track.adsr, track.gainNode.gain.value);
-                                p.start(time);
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
+                                    // index recovery
+                                    let currentIdx = poolCounters[track.sample];
 
-                            triggerEnvelope(pool[0]._gainNode.gain, time, velocity, track.adsr, track.gainNode.gain.value);
-                            pool[0].start(time);
-                        }
-                    }
-                }
+                                    // player selection
+                                    const p = pool[currentIdx];
+
+                                    // player existence check
+                                    if (p) {
+                                        // envelope applied using p._gainNode.gain as a safe destination
+                                        if (p._gainNode && p._gainNode.gain) {
+                                            triggerEnvelope(p._gainNode.gain, time, velocity, track.adsr, track.gainNode.gain.value);
+                                        }
+                                        
+                                        // START
+                                        // If the player is already playing, Tone.js restarts it without errors.
+                                        p.start(time);
+
+                                        // ROTATION
+                                        // We update the counter for the next hit
+                                        poolCounters[track.sample] = (currentIdx + 1) % pool.length;
+
+                                    }
+                                }
+                            } 
             }
         }
     });
