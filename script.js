@@ -748,13 +748,29 @@ function initInterface() {
 
 
         // change player
-        select.addEventListener('change', (e) => {
+        select.addEventListener('change', async (e) => {
             track.sample = e.target.value;
-
+            // ensure tone.js is active
+            if (Tone.context.state !== 'running') {
+                await Tone.start();
+            }
+            // user sample preview
             if (track.sample.startsWith('user_') && track.customPlayer) {
+                // Connect if needed (safety check)
+                if (track.customPlayerGain) { track.customPlayer.connect(track.customPlayerGain) };
                 track.customPlayer.start();
-            } else if (players.loaded && players.has(track.sample)) {
-                players.player(track.sample).start();
+            }
+            // native samples preview
+            else if (players.has(track.sample)) {
+                const previewPlayer = players.player(track.sample);
+                // force connection 
+                previewPlayer.connect(track.gainNode);
+                // check if not loaded say waiting
+                if (previewPlayer.loaded) {
+                    previewPlayer.start();
+                } else {
+                    console.log("Sample still loading...");
+                }
             }
         });
         // sample custom load
@@ -801,6 +817,22 @@ function initInterface() {
                 track.userSampleOpt.innerText = "User Sample";
                 select.appendChild(track.userSampleOpt);
                 select.value = userSampleName;
+
+                // trigger when ready 
+                if (Tone.context.state !== 'running') {
+                    await Tone.start();
+                }
+                if (track.customPlayer._envelope) {
+                    // standard envelope for review
+                    track.customPlayer._envelope.attack = 0.01;
+                    track.customPlayer._envelope.decay = 0.5;
+                    track.customPlayer._envelope.sustain = 1;
+                    track.customPlayer._envelope.release = 1;
+
+                    track.customPlayer._envelope.triggerAttackRelease(0.5);
+                }
+
+                track.customPlayer.start();
 
                 statusEl.textContent = "Sample loaded!";
                 statusEl.style.color = "#2ecc71";
@@ -971,40 +1003,40 @@ function playStep(time) {
                     track.customPlayer.start(time);
                 }
                 else if (players.loaded && players.has(track.sample)) {
-                                const pool = playerPools[track.sample];
-                                
-                                // controls if the pool exists and has a player connected
-                                if (pool && pool.length > 0) {
-                                    
-                                    //if the counter doesn't exist we create that now to 0
-                                    if (typeof poolCounters[track.sample] === 'undefined') {
-                                        poolCounters[track.sample] = 0;
-                                    }
+                    const pool = playerPools[track.sample];
 
-                                    // index recovery
-                                    let currentIdx = poolCounters[track.sample];
+                    // controls if the pool exists and has a player connected
+                    if (pool && pool.length > 0) {
 
-                                    // player selection
-                                    const p = pool[currentIdx];
+                        //if the counter doesn't exist we create that now to 0
+                        if (typeof poolCounters[track.sample] === 'undefined') {
+                            poolCounters[track.sample] = 0;
+                        }
 
-                                    // player existence check
-                                    if (p) {
-                                        // envelope applied using p._gainNode.gain as a safe destination
-                                        if (p._gainNode && p._gainNode.gain) {
-                                            triggerEnvelope(p._gainNode.gain, time, velocity, track.adsr, track.gainNode.gain.value);
-                                        }
-                                        
-                                        // START
-                                        // If the player is already playing, Tone.js restarts it without errors.
-                                        p.start(time);
+                        // index recovery
+                        let currentIdx = poolCounters[track.sample];
 
-                                        // ROTATION
-                                        // We update the counter for the next hit
-                                        poolCounters[track.sample] = (currentIdx + 1) % pool.length;
+                        // player selection
+                        const p = pool[currentIdx];
 
-                                    }
-                                }
-                            } 
+                        // player existence check
+                        if (p) {
+                            // envelope applied using p._gainNode.gain as a safe destination
+                            if (p._gainNode && p._gainNode.gain) {
+                                triggerEnvelope(p._gainNode.gain, time, velocity, track.adsr, track.gainNode.gain.value);
+                            }
+
+                            // START
+                            // If the player is already playing, Tone.js restarts it without errors.
+                            p.start(time);
+
+                            // ROTATION
+                            // We update the counter for the next hit
+                            poolCounters[track.sample] = (currentIdx + 1) % pool.length;
+
+                        }
+                    }
+                }
             }
         }
     });
