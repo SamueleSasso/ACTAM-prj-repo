@@ -58,6 +58,8 @@ const players = new Tone.Players(samples, {
 
 // Player pool for overlapping playback
 const playerPools = {};
+const poolCounters = {}; // to keep track for same 
+
 Object.keys(samples).forEach((sampleKey, idx) => {
     playerPools[sampleKey] = [];
     for (let i = 0; i < 4; i++) {
@@ -500,7 +502,7 @@ function renderAdsrKnobs() {
             (v) => {
                 track.adsr[param.key] = v;
             },
-            param.step
+            param.step,
         );
         adsrKnobsContainer.appendChild(knobDiv);
     });
@@ -517,16 +519,35 @@ function initAdsrPanel() {
 
 // ADSR LOGIC: apply att. dec. sust. rel. to the gain 
 function triggerEnvelope(gain, time, velocity, adsr, gainValue) {
+    // clean eventual envelope
     gain.cancelScheduledValues(time);
-    const currentValue = gain.value;
-    gain.setValueAtTime(currentValue, time);
-    gain.linearRampToValueAtTime(velocity * gainValue, time + adsr.attack);
-    gain.linearRampToValueAtTime(velocity * gainValue * adsr.sustain, time + adsr.attack + adsr.decay);
-    const releaseStart = time + adsr.attack + adsr.decay + 0.05;
-    gain.linearRampToValueAtTime(0, releaseStart + adsr.release);
+
+    // reset (gain = 0 at time start)
+    gain.setValueAtTime(0, time);
+
+    // values calculation
+    const peakValue = velocity * gainValue;
+    const sustainValue = peakValue * adsr.sustain;
+
+    // times calculation
+    const attackEndTime = time + adsr.attack;
+    const decayEndTime = attackEndTime + adsr.decay;
+    // 50 ms hold before release
+    const releaseStartTime = decayEndTime + 0.05;
+    const releaseEndTime = releaseStartTime + adsr.release;
+
+    // ramping for ATTACK
+    gain.linearRampToValueAtTime(peakValue, attackEndTime);
+
+    // ramping for DECAY
+    gain.linearRampToValueAtTime(sustainValue, decayEndTime);
+
+    //hold 
+    gain.setValueAtTime(sustainValue, releaseStartTime);
+
+    // ramp for RELEASE
+    gain.linearRampToValueAtTime(0, releaseEndTime);
 }
-
-
 /* =================================================================
    VELOCITY PAINTING 
    ================================================================= */
@@ -1139,38 +1160,38 @@ function downloadMIDI(options) {
         // add tracks to export array
         midiTracks.push(track);
     });
-        // download file
-        try {
-            // define writer for every track
-            const writer = new MidiWriter.Writer(midiTracks);
-            const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
+    // download file
+    try {
+        // define writer for every track
+        const writer = new MidiWriter.Writer(midiTracks);
+        const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
 
 
 
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
 
-                // project name file
-                let filename = `Actam_Project`;
-                filename += settings.velocity ? "_vel.mid" : ".mid";
+        // project name file
+        let filename = `Actam_Project`;
+        filename += settings.velocity ? "_vel.mid" : ".mid";
 
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
 
-                // Cleanup variables
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(a.href);
-                }, 100);
+        // Cleanup variables
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 100);
 
-            
 
-        } catch (e) {
-            console.error("Errore export MIDI:", e);
-            alert("Errore nella generazione del file MIDI.");
-        }
-    
+
+    } catch (e) {
+        console.error("Errore export MIDI:", e);
+        alert("Errore nella generazione del file MIDI.");
+    }
+
 }
 
 
