@@ -1,5 +1,5 @@
 /* =================================================================
-   1. AUDIO ENGINE SETUP
+   AUDIO ENGINE SETUP + SAMPLES LOADING
    ================================================================= */
 const statusEl = document.getElementById('status');
 const startBtn = document.getElementById('startBtn');
@@ -29,7 +29,7 @@ setTimeout(() => {
 
 
 /* =================================================================
-   2. APP STATE
+   APP FOUNDAMENTAL DATA STRUCTURES
    ================================================================= */
 const tracks = [
     { id: 0, colorVar: '--track-1', radius: 260, steps: 16, pulses: 4, offset: 0, sample: 'Kick', pattern: [], playingIdx: -1, timer: null },
@@ -42,7 +42,6 @@ tracks.forEach(track => {
 });
 
 
-// Add gain nodes for each track
 tracks.forEach(track => {
     track.gainNode = new Tone.Gain(1).connect(masterPanner);
 });
@@ -65,7 +64,7 @@ Object.keys(samples).forEach((sampleKey, idx) => {
         // Crea un gain dedicato per ogni player
         const playerGain = new Tone.Gain(1).connect(masterPanner);
         const p = new Tone.Player(samples[sampleKey]).connect(playerGain);
-        p._gainNode = playerGain; // Salva il gain sul player
+        p._gainNode = playerGain;
         playerPools[sampleKey].push(p);
     }
 });
@@ -79,11 +78,11 @@ Object.keys(samples).forEach((sampleKey, idx) => {
 
 
 
-let currentVelocityTrack = 0; // Traccia selezionata nel velocity panel
+let currentVelocityTrack = 0;
 let isPlaying = false;
 
 /* =================================================================
-   3. KNOB CLASS
+   KNOB CLASS
    ================================================================= */
 class Knob {
     constructor(container, label, min, max, initialValue, colorVar, callback, step = 1, blockDuringPlayback = false) {
@@ -95,12 +94,12 @@ class Knob {
         this.step = step;
         this.blockDuringPlayback = blockDuringPlayback;
 
-        // UI Config
+        // define starting angles
         this.minAngle = -135;
         this.maxAngle = 135;
         this.indicatorColor = `var(${colorVar})`;
 
-        // Create DOM
+        // initialize dom
         this.wrapper = document.createElement('div');
         this.wrapper.className = 'knob-container';
         this.wrapper.innerHTML = `
@@ -118,7 +117,7 @@ class Knob {
         this.indicatorEl = this.wrapper.querySelector('.knob-indicator');
         this.displayEl = this.wrapper.querySelector('.value-display');
 
-        // Drag State
+        // dragging 
         this.dragging = false;
         this.startY = 0;
         this.startValue = 0;
@@ -156,7 +155,6 @@ class Knob {
             const valueChange = deltaY * valuePerPixel;
             let newValue = this.startValue + valueChange;
 
-            // Snap to step
             if (this.step === 1) {
                 newValue = Math.round(newValue);
             } else {
@@ -166,6 +164,8 @@ class Knob {
             this.setValue(newValue);
         });
     }
+
+    // VALUE BY ANGLE
 
     setValue(val) {
         this.value = Math.max(this.min, Math.min(this.max, val));
@@ -192,50 +192,52 @@ class Knob {
     }
 }
 
-/* PRESET DEFINITION */
+/* =================================================================
+   PRESET DEFINITION
+   ================================================================= */
 const presets = {
     dub_techno: {
-        // Focus: Atmospheric textures using Ride and LowTom
+
         bpm: 118,
         tracks: [
-            // Track 1: Deep anchor
+
             { steps: 16, pulses: 4, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.3, sustain: 0.8, release: 0.2 } },
-            // Track 2: The characteristic "Chord" stab replacement using LowTom
+
             { steps: 16, pulses: 3, offset: 2, sample: 'LowTom', adsr: { attack: 0.05, decay: 0.1, sustain: 0.4, release: 0.8 } },
-            // Track 3: Driving high-end texture
+
             { steps: 16, pulses: 16, offset: 0, sample: 'Ride', adsr: { attack: 0.02, decay: 0.1, sustain: 0.3, release: 0.6 } },
-            // Track 4: Syncopated Rim
+
             { steps: 12, pulses: 5, offset: 6, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.1, release: 0.05 } }
         ]
     },
     minimal: {
-        // Focus: Micro-percussion (Clicky, short sounds)
+
         bpm: 126,
         tracks: [
             { steps: 16, pulses: 4, offset: 0, sample: 'Kick', adsr: { attack: 0.001, decay: 0.1, sustain: 0.6, release: 0.1 } },
-            // Track 2: Dry, woody percussion
+
             { steps: 16, pulses: 2, offset: 4, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.1, release: 0.02 } },
-            // Track 3: Tight closed hat
+
             { steps: 13, pulses: 9, offset: 2, sample: 'ClosedHat', adsr: { attack: 0.001, decay: 0.03, sustain: 0.0, release: 0.03 } },
-            // Track 4: Occasional tom accent
+
             { steps: 32, pulses: 3, offset: 16, sample: 'MidTom', adsr: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.1 } }
         ]
     },
     jungle: {
-        // Focus: Breakbeat simulation using complex Euclidean offsets
+
         bpm: 165,
         tracks: [
             { steps: 16, pulses: 7, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.2 } },
-            // Track 2: Ghost snares
+
             { steps: 16, pulses: 5, offset: 2, sample: 'Snare', adsr: { attack: 0.01, decay: 0.1, sustain: 0.4, release: 0.1 } },
-            // Track 3: Fast shuffling
+
             { steps: 8, pulses: 6, offset: 1, sample: 'ClosedHat', adsr: { attack: 0.005, decay: 0.05, sustain: 0.1, release: 0.05 } },
-            // Track 4: Open hat on the off-beat
+
             { steps: 16, pulses: 4, offset: 2, sample: 'OpenHat', adsr: { attack: 0.01, decay: 0.1, sustain: 0.4, release: 0.3 } }
         ]
     },
     poly_groove: {
-        // Focus: Interlocking Toms (Melodic rhythm)
+
         bpm: 112,
         tracks: [
             { steps: 5, pulses: 2, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2 } },
@@ -245,7 +247,6 @@ const presets = {
         ]
     },
     custom: {
-        // Clean slate
         bpm: 120,
         tracks: [
             { steps: 16, pulses: 4, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } },
@@ -256,6 +257,8 @@ const presets = {
     }
 };
 let currentPreset = 'custom';
+
+// apply preset function
 function applyPreset(presetName) {
     const preset = presets[presetName];
     if (!preset) return;
@@ -277,7 +280,7 @@ function applyPreset(presetName) {
         regenerateTrack(track);
     });
 
-    // Sync knobs UI with model (steps / pulses / offset)
+    // update KNOBS accordingly to the preset
     preset.tracks.forEach((presetTrack, idx) => {
         const track = tracks[idx];
         if (track.stepsKnob) {
@@ -294,12 +297,11 @@ function applyPreset(presetName) {
     });
 
 
-    // Update sample selects
+    // Update sample accordingly to the preset
     preset.tracks.forEach((_, idx) => {
         const track = tracks[idx];
         const sel = track.sampleSelect;
         if (sel) {
-            // ensure option exists, then set value and trigger change
             if (![...sel.options].some(o => o.value === track.sample)) {
                 const opt = document.createElement('option');
                 opt.value = track.sample;
@@ -312,7 +314,7 @@ function applyPreset(presetName) {
     });
 
 
-    // Re-render UI
+    // update velocity and adsr
     renderVelocityBars();
     renderAdsrKnobs();
 
@@ -336,8 +338,9 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
         applyPreset(presetName);
     });
 });
+
 /* =================================================================
-   4. UI GENERATION
+   UI GENERATION
    ================================================================= */
 //velocity bars rendering
 const velocityBarsContainer = document.getElementById('velocityBars');
@@ -345,8 +348,6 @@ const velocityBarsContainer = document.getElementById('velocityBars');
 function renderVelocityBars() {
     const track = tracks[currentVelocityTrack];
     velocityBarsContainer.innerHTML = '';
-
-    // Controllo di sicurezza: se la traccia non ha pattern generato (es. init), evita errori
     if (!track.pattern || track.pattern.length === 0) return;
 
     for (let i = 0; i < track.steps; i++) {
@@ -361,29 +362,29 @@ function renderVelocityBars() {
         slider.value = track.velocity[i];
         slider.className = 'velocity-slider';
 
+        //double click reset
         slider.addEventListener('dblclick', () => {
-            track.velocity[i] = 100; // Reset logico
-            slider.value = 100;      // Reset visivo
+            track.velocity[i] = 100;
+            slider.value = 100;
 
-            // Aggiorna il testo della percentuale
+            // velocity value display update
             const valDisplay = container.querySelector('.velocity-value');
             if (valDisplay) valDisplay.textContent = track.velocity[i];
         });
 
-        // --- MODIFICA RICHIESTA: Gestione stato attivo/inattivo ---
-        // Se il pulse in questo step è 0 (assente), aggiungiamo la classe inattiva
+        // not useful slider disabling 
         if (track.pattern[i] === 0) {
             slider.classList.add('inactive-slider');
         }
-        // ----------------------------------------------------------
+
 
         slider.addEventListener('input', (e) => {
             track.velocity[i] = parseInt(e.target.value);
-            // Aggiorna il display del valore solo per questo slider
             const valDisplay = container.querySelector('.velocity-value');
             if (valDisplay) valDisplay.textContent = track.velocity[i];
         });
 
+        // velocity lable
         const label = document.createElement('div');
         label.className = 'velocity-label';
         label.textContent = i + 1;
@@ -416,12 +417,13 @@ const adsrParams = [
     { key: 'release', label: 'RELEASE', min: 0.01, max: 3, step: 0.01 }
 ];
 
+//ADSR knobs
 function renderAdsrKnobs() {
     adsrKnobsContainer.innerHTML = '';
     const track = tracks[currentAdsrTrack];
     adsrParams.forEach(param => {
         const knobDiv = document.createElement('div');
-        // Use the small knob style
+        //Small knob definition
         knobDiv.className = 'knob-container small';
         new Knob(
             knobDiv,
@@ -448,7 +450,7 @@ function initAdsrPanel() {
     renderAdsrKnobs();
 }
 
-// --- ENVELOPE LOGIC: Apply ADSR to each note trigger ---
+// ADSR LOGIC: apply att. dec. sust. rel. to the gain 
 function triggerEnvelope(gain, time, velocity, adsr, gainValue) {
     gain.cancelScheduledValues(time);
     const currentValue = gain.value;
@@ -461,29 +463,29 @@ function triggerEnvelope(gain, time, velocity, adsr, gainValue) {
 
 
 /* =================================================================
-   VELOCITY PAINTING LOGIC
+   VELOCITY PAINTING 
    ================================================================= */
 
 let isDrawingVelocity = false;
 
-// Transform X/Y mouse position in Step/Velocity
+// X/Y axist to velocity mapping
 function updateVelocityFromPointer(e) {
     const track = tracks[currentVelocityTrack];
     const rect = velocityBarsContainer.getBoundingClientRect();
 
-    // calculate the step we're touching (X-axis)
+    // calculate the step we're touching
     const relativeX = e.clientX - rect.left;
     const stepWidth = rect.width / track.steps;
 
     let stepIndex = Math.floor(relativeX / stepWidth);
 
-    // keeps into array's limits (0-127)
+    // limit to 127
     stepIndex = Math.max(0, Math.min(stepIndex, track.steps - 1));
 
-    // calculate velocity value (Y-axes)
+    // calculate velocity value
     const relativeY = e.clientY - rect.top;
 
-    // normalize on 0-1 value range
+    // normalize on 0-1 value range (to use with tone.js)
     let normalizedVal = 1 - (relativeY / rect.height);
 
     // clamping on vertical constraints (non usciamo dai bordi verticali)
@@ -491,14 +493,10 @@ function updateVelocityFromPointer(e) {
 
     const newVelocity = Math.round(normalizedVal * 127);
 
-    // 3. APPLICA I CAMBIAMENTI
-
-    // A) Aggiorna il dato nel modello
+    // update velocyty per step
     track.velocity[stepIndex] = newVelocity;
 
-    // B) Aggiorna visivamente lo slider specifico e il numero
-    // Recuperiamo il container dello step specifico
-    // Nota: children[stepIndex] corrisponde all'ordine di creazione
+    //new velocity value display
     const stepContainer = velocityBarsContainer.children[stepIndex];
     if (stepContainer) {
         const slider = stepContainer.querySelector('.velocity-slider');
@@ -513,25 +511,18 @@ function updateVelocityFromPointer(e) {
 function initVelocityPanel() {
     const velocityTrackSelect = document.getElementById('velocityTrackSelect');
 
-    // Cambio traccia dal menu a tendina
+    // header selection
     velocityTrackSelect.addEventListener('change', (e) => {
         currentVelocityTrack = parseInt(e.target.value);
         renderVelocityBars();
     });
-
-    // === GESTIONE PAINTING (Mouse & Touch) ===
-
-    // Quando premiamo il mouse nel contenitore velocity
+    // velocity drawing start
     velocityBarsContainer.addEventListener('mousedown', (e) => {
         isDrawingVelocity = true;
-        // Aggiorna subito il punto cliccato senza aspettare il movimento
         updateVelocityFromPointer(e);
     });
-
-    // Quando muoviamo il mouse OVUNQUE (window), se stiamo disegnando
     window.addEventListener('mousemove', (e) => {
         if (isDrawingVelocity) {
-            // Impedisce selezione testo o comportamenti strani di drag nativo
             e.preventDefault();
             updateVelocityFromPointer(e);
         }
@@ -545,6 +536,7 @@ function initVelocityPanel() {
     renderVelocityBars();
 }
 
+// INITINTERFACE (SEQUENCE CONTROLS AND ACTIONS)
 function initInterface() {
     const trackTitles = [
         { label: "Sequence 1 (Outer)", color: "var(--track-1)" },
@@ -589,14 +581,11 @@ function initInterface() {
         gainRow.innerHTML = `<div class="knob-label">Gain</div>`;
         gainRow.appendChild(document.createElement('div'));
         trackContainer.appendChild(gainRow);
-
-        // Gain knob (0 to 2, default 1, step 0.01)
-        // MODIFICA: Salviamo il riferimento in 'gainKnob'
         const gainKnob = new Knob(gainRow.lastChild, 'GAIN', 0, 2, 1, track.colorVar, (v) => {
             track.gainNode.gain.value = v;
         }, 0.01);
 
-        // AGGIUNTA: Listener per il doppio click
+        // RESET GAIN when double click
         gainKnob.knobEl.addEventListener('dblclick', () => {
             gainKnob.setValue(1.00);
         });
@@ -626,12 +615,10 @@ function initInterface() {
         fileInput.accept = 'audio/*';
         fileInput.style.display = 'none';
 
-        // creazione bottone custom 
+        // custom button 
         const customLoadBtn = document.createElement('button');
         customLoadBtn.textContent = "LOAD SAMPLE";
         customLoadBtn.className = 'custom-file-btn';
-
-
         customLoadBtn.addEventListener('click', () => {
             fileInput.click();
         });
@@ -640,7 +627,7 @@ function initInterface() {
 
         trackContainer.appendChild(soundGroup);
 
-        // Inizializza i knob nelle rispettive righe
+        // sequence knobs logic
         const stepsK = new Knob(stepsRow.lastChild, 'STEPS', 1, 32, track.steps, track.colorVar, (v) => {
             track.steps = v;
             pulsesK.updateLimits(0, track.steps);
@@ -649,13 +636,13 @@ function initInterface() {
             if (currentVelocityTrack === index) {
                 renderVelocityBars();
             }
-        }, 1, true); // Blocca durante playback
+        }, 1, true);
 
         const pulsesK = new Knob(pulsesRow.lastChild, 'PULSES', 0, track.steps, track.pulses, track.colorVar, (v) => {
             track.pulses = v;
             regenerateTrack(track);
 
-            if (currentVelocityTrack === index) { //update 
+            if (currentVelocityTrack === index) {
                 renderVelocityBars();
             }
         });
@@ -663,31 +650,28 @@ function initInterface() {
             track.offset = v;
             regenerateTrack(track);
 
-            if (currentVelocityTrack === index) { //update
+            if (currentVelocityTrack === index) {
                 renderVelocityBars();
             }
         });
-
-        
 
 
         track.stepsKnob = stepsK;
         track.pulsesKnob = pulsesK;
         track.offsetKnob = offsetK;
 
-        // Cambia sample (default o custom)
+
+        // change player
         select.addEventListener('change', (e) => {
             track.sample = e.target.value;
 
-            // Se è un sample custom, usa il player salvato
             if (track.sample.startsWith('user_') && track.customPlayer) {
                 track.customPlayer.start();
             } else if (players.loaded && players.has(track.sample)) {
-                // Altrimenti usa i sample di default
                 players.player(track.sample).start();
             }
         });
-        // Caricamento sample custom
+        // sample custom load
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -699,35 +683,33 @@ function initInterface() {
 
             statusEl.textContent = "Loading...";
             statusEl.style.color = "#fff";
-
             const url = URL.createObjectURL(file);
             const userSampleName = `user_${track.id}_${Date.now()}`;
 
             try {
-                // Crea un gain dedicato per il custom player
                 const customGain = new Tone.Gain(1).connect(masterPanner);
                 const customPlayer = new Tone.Player(url).connect(customGain);
 
-                // Aspetta che il buffer sia caricato
+                // waiting for loading buffer
                 await customPlayer.load(url);
 
-                // Rimuovi la vecchia option "User Sample" se esiste
+                // remove old user sample
                 if (track.userSampleOpt) {
                     select.removeChild(track.userSampleOpt);
                     track.userSampleOpt = null;
                 }
 
-                // Se c'era un player custom precedente, disconnettilo
+                // desconnect old custom plauer (if not buffer crash)
                 if (track.customPlayer) {
                     track.customPlayer.dispose();
                 }
 
-                // Salva il nuovo player e il suo gain sulla traccia
+                // set new sample
                 track.customPlayer = customPlayer;
                 track.customPlayerGain = customGain;
                 track.sample = userSampleName;
 
-                // Aggiungi la nuova option "User Sample"
+                // new user sample option
                 track.userSampleOpt = document.createElement('option');
                 track.userSampleOpt.value = userSampleName;
                 track.userSampleOpt.innerText = "User Sample";
@@ -749,8 +731,9 @@ function initInterface() {
     });
 }
 /* =================================================================
-   5. MATH & DRAW
+   MATH & DRAW
    ================================================================= */
+//fundamental math for pattern
 function generateEuclideanPattern(steps, pulses) {
     if (pulses >= steps) return Array(steps).fill(1);
     if (pulses <= 0) return Array(steps).fill(0);
@@ -785,6 +768,7 @@ function rotateArray(arr, shift) {
     return arr.slice(-shift).concat(arr.slice(0, -shift));
 }
 
+// regeneratetrack call the function to modify/regenerate array pattern
 function regenerateTrack(track) {
     let pat = generateEuclideanPattern(track.steps, track.pulses);
     track.pattern = rotateArray(pat, track.offset);
@@ -796,10 +780,8 @@ function regenerateTrack(track) {
     const newLength = track.steps;
 
     if (newLength > oldLength) {
-        // CASO 1: Aggiungi steps → riempi i nuovi con 100 (default)
         track.velocity = [...oldVelocity, ...new Array(newLength - oldLength).fill(100)];
     } else if (newLength < oldLength) {
-        // CASO 2: Rimuovi steps → taglia l'array
         track.velocity = oldVelocity.slice(0, newLength);
     }
 
@@ -807,6 +789,10 @@ function regenerateTrack(track) {
 }
 
 const tracksGroup = document.getElementById('tracksGroup');
+
+/* =================================================================
+   CIRCLES DRAWING
+   ================================================================= */
 
 function polarPos(i, totalSteps, radius) {
     const angle = (2 * Math.PI * i / totalSteps) - Math.PI / 2;
@@ -816,7 +802,7 @@ function polarPos(i, totalSteps, radius) {
 function drawAllCircles() {
     tracksGroup.innerHTML = '';
     tracks.forEach((track, tIdx) => {
-        // Guide
+        // svg
         const guide = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         guide.setAttribute("r", track.radius);
         guide.setAttribute("class", "guide");
@@ -841,13 +827,12 @@ function drawAllCircles() {
             dot.setAttribute("class", className);
             dot.id = `dot-${tIdx}-${i}`;
 
-            // Manual Toggle
+            // Manual Toggle modify array
             dot.onclick = () => {
                 track.pattern[i] = track.pattern[i] ? 0 : 1;
                 drawAllCircles();
 
-                // Se stiamo modificando la traccia attualmente selezionata nel pannello Velocity,
-                // dobbiamo aggiornare le barre per riflettere il cambio di stato (colore/grigio).
+                // velocity bars activity update
                 if (tIdx === currentVelocityTrack) {
                     renderVelocityBars();
                 }
@@ -858,14 +843,14 @@ function drawAllCircles() {
     });
 }
 /* =================================================================
-   6. POLY-SEQUENCER ENGINE (MCM & CLOCK GLOBALE) - VERSIONE Tone.Transport
+   SEQUENCER ENGINE (MCM and CLOCK) -- Tone.Transport
    ================================================================= */
 let globalStep = 0;
 let transportEventId = null;
 
-// Funzione principale chiamata dal clock di Tone.Transport
+// main clock/sequencing function
 function playStep(time) {
-    // Calcola la risoluzione globale (MCM)
+    // mcm calculation
     const stepsPerBar = tracks.reduce((acc, t) => lcm(acc, t.steps), 1);
 
     tracks.forEach((track, tIdx) => {
@@ -888,18 +873,17 @@ function playStep(time) {
                 }
             }
 
-            // Audio Trigger (usando il tempo fornito da Tone.Transport)
+            // Audio Trigger
             if (track.pattern[stepIdx] === 1) {
-                const velocity = track.velocity[stepIdx] / 127; // Normalizza da 0-127 a 0-1
+                const velocity = track.velocity[stepIdx] / 127; // velocity normalization
 
 
-                // Se è un sample custom, usa il player salvato
+                // check which player 
                 if (track.sample.startsWith('user_') && track.customPlayer && track.customPlayerGain) {
 
                     triggerEnvelope(track.customPlayerGain.gain, time, velocity, track.adsr, track.gainNode.gain.value);
                     track.customPlayer.start(time);
                 }
-                // Altrimenti usa i sample di default
                 else if (players.loaded && players.has(track.sample)) {
                     const pool = playerPools[track.sample];
                     if (pool) {
@@ -925,17 +909,18 @@ function playStep(time) {
         }
     });
 
-    // Avanza step
     globalStep = (globalStep + 1) % stepsPerBar;
 }
 
-// Funzioni per MCM
+// MCM
 function gcd(a, b) {
     return b === 0 ? a : gcd(b, a % b);
 }
 function lcm(a, b) {
     return (a * b) / gcd(a, b);
 }
+
+//start/stop sequencer
 async function startSequencer() {
     if (isPlaying) return;
     await Tone.start();
@@ -944,29 +929,24 @@ async function startSequencer() {
     startBtn.style.color = "#888";
     globalStep = 0;
 
-    // Imposta BPM
     const bpm = parseInt(document.getElementById('bpm').value) || 120;
     Tone.Transport.bpm.value = bpm;
 
-    // Calcola steps per bar (MCM)
+    // steps per bar
     const stepsPerBar = tracks.reduce((acc, t) => lcm(acc, t.steps), 1);
-
-    // Imposta la risoluzione dei tick del Transport (PPQ = stepsPerBar * 4)
     Tone.Transport.PPQ = stepsPerBar;
 
-    // Rimuovi eventuali eventi precedenti
+    // remove previous events
     if (transportEventId !== null) {
         Tone.Transport.clear(transportEventId);
     }
 
-    // Schedula playStep ogni 4 tick ("4i" = ogni step)
     transportEventId = Tone.Transport.scheduleRepeat(playStep, "4i");
-
     Tone.Transport.start("+0.05");
 }
 
 function stopSequencer() {
-    // stop sound from all players
+    // stop sound from all players when stop
     Object.keys(samples).forEach(sampleKey => {
         if (players.has(sampleKey)) {
             players.player(sampleKey).stop();
@@ -997,7 +977,7 @@ function stopSequencer() {
 startBtn.onclick = startSequencer;
 document.getElementById('stopBtn').onclick = stopSequencer;
 
-// SPACEBAR BUTTON BINDING
+// Spacebar binding
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
 
@@ -1015,22 +995,20 @@ document.addEventListener('keydown', (e) => {
 
 
 /* =================================================================
-   7. MIDI EXPORT ENGINE (FIXED: MERGE TIMING CORRECTED)
+   MIDI EXPORT ENGINE (FIXED: MERGE TIMING CORRECTED)
    ================================================================= */
 
 const exportBtn = document.getElementById('exportBtn');
 
 function downloadMIDI(options) {
-    // SECURITY CHECK
     if (typeof MidiWriter === 'undefined') {
         alert("Errore critico: Libreria MidiWriter non caricata.");
         return;
     }
 
-    // 1. SETUP OPZIONI
+    // Setup option
     const settings = {
         velocity: (options && options.velocity !== undefined) ? options.velocity : true,
-        // Parametro 'merge' rimosso come richiesto
         selectedTracks: (options && options.selectedTracks) ? options.selectedTracks : [0, 1, 2, 3]
     };
 
@@ -1039,29 +1017,26 @@ function downloadMIDI(options) {
         return;
     }
 
-    // --- CONFIGURAZIONE STANDARD ---
-    const PPQ = 128;            // Standard MidiWriter (128 tick per quarto)
-    const TICKS_PER_BAR = 512;  // 128 * 4 (Corretto per 4/4)
+    // STANDARD tick config
+    const PPQ = 128;
+    const TICKS_PER_BAR = 512;
     const BARS_TO_EXPORT = 4;
-    // const TOTAL_TICKS_LENGTH rimosso perché serviva solo per il merge
 
-    // Recupero BPM dall'UI
+    // get BPM from input
     const currentBpm = parseInt(document.getElementById('bpm').value) || 120;
-
     const separateTracks = [];
 
-    // 2. GENERAZIONE CORE (Ciclo Unico)
     settings.selectedTracks.forEach(tIdx => {
         const t = tracks[tIdx];
         if (!t) return;
 
-        // Prepariamo la traccia singola
+        // prepare track
         const track = new MidiWriter.Track();
         track.addTrackName(`Track ${tIdx + 1} - ${t.sample.toUpperCase()}`);
         track.setTempo(currentBpm);
         track.setTimeSignature(4, 4);
 
-        // MODIFICA: Mappatura fissa su nota 37 per tutte le tracce
+        // set note to export
         const noteNumber = 37;
 
         const totalStepsToExport = t.steps * BARS_TO_EXPORT;
@@ -1072,7 +1047,7 @@ function downloadMIDI(options) {
             const patternIdx = i % t.steps;
             const isActive = t.pattern[patternIdx] === 1;
 
-            // --- MATEMATICA PRECISA ---
+            // math to export
             const absStartBar = i / t.steps;
             const absEndBar = (i + 1) / t.steps;
 
@@ -1097,18 +1072,17 @@ function downloadMIDI(options) {
                 waitBuffer = 0;
 
             } else {
-                // Accumulo silenzio
+                // silence
                 waitBuffer += currentStepDuration;
             }
         }
         separateTracks.push(track);
     });
 
-    // 3. SELEZIONE OUTPUT
-    // Utilizziamo direttamente le tracce separate
+    // SELECT OUTPUT
     const finalTracks = separateTracks;
 
-    // 4. DOWNLOAD
+    // DOWNLOAD
     try {
         const writer = new MidiWriter.Writer(finalTracks);
         const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
@@ -1131,16 +1105,11 @@ function downloadMIDI(options) {
 }
 
 
-// BINDING PULSANTE
-// Usa replaceChild per garantire che non ci siano listener duplicati (safe-mode)
+
 /* =================================================================
-   8. UI MODALE & BINDINGS (Sostituisce il vecchio binding)
+   RESET BUTTON VELOCITY
    ================================================================= */
 
-// ==========================================
-// TASTO RESET (GLOBAL BINDING)
-// Incollalo alla fine del file, fuori da tutto
-// ==========================================
 const globalResetBtn = document.getElementById('resetVelocityBtn');
 
 if (globalResetBtn) {
@@ -1159,8 +1128,10 @@ if (globalResetBtn) {
 } else {
     console.error("ERRORE: Il tasto resetVelocityBtn non è stato trovato nell'HTML.");
 }
-
-// Elementi DOM
+/* =================================================================
+   MODALS & BINDINGS 
+   ================================================================= */
+// define dom modals
 const modalOverlay = document.getElementById('midiModal');
 const confirmExportBtn = document.getElementById('confirmExportBtn');
 const cycleBtns = document.querySelectorAll('.cycle-btn');
@@ -1169,10 +1140,10 @@ const cycleBtns = document.querySelectorAll('.cycle-btn');
 let exportSettings = {
     velocity: true,
     merge: false,
-    selectedTracks: [0, 1, 2, 3] // Default: tutte le tracce (ID 0-3)
+    selectedTracks: [0, 1, 2, 3]
 };
 
-// 1. GESTIONE APERTURA (Tasto Export Principale)
+// open modals button
 if (exportBtn) {
     const newBtn = exportBtn.cloneNode(true);
     if (exportBtn.parentNode) {
@@ -1183,28 +1154,26 @@ if (exportBtn) {
     }
 }
 
-// 2. GESTIONE CHIUSURA
+// close modal button
 modalOverlay.addEventListener('click', (e) => {
     if (e.target === modalOverlay) {
         modalOverlay.classList.add('hidden');
     }
 });
 
-// 3. GESTIONE SELETTORE TRACCE (Multi-Select)
+// selector tracks
 cycleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        btn.classList.toggle('active'); // Toggle visuale
+        btn.classList.toggle('active');
 
         const val = parseInt(btn.getAttribute('data-val'));
         const trackId = val - 1;
 
         if (btn.classList.contains('active')) {
-            // Aggiungi trackId se manca
             if (!exportSettings.selectedTracks.includes(trackId)) {
                 exportSettings.selectedTracks.push(trackId);
             }
         } else {
-            // Rimuovi trackId se presente
             exportSettings.selectedTracks = exportSettings.selectedTracks.filter(id => id !== trackId);
         }
 
@@ -1213,22 +1182,27 @@ cycleBtns.forEach(btn => {
     });
 });
 
-// 4. GESTIONE CONFERMA
+// CONFIRM EXPORT BUTTON
 confirmExportBtn.addEventListener('click', () => {
-    // Raccogliamo i dati dalla modale
     const options = {
-        velocity: document.getElementById('optVelocity').checked, // TRUE o FALSE
-        merge: document.getElementById('optMerge').checked, // <--- NUOVO PARAMETRO
-        selectedTracks: exportSettings.selectedTracks // Mantiene la selezione fatta coi bottoni 1-2-3-4
+        //velocity check
+        velocity: document.getElementById('optVelocity').checked,
+
+        //MERGE PERCHEEEE
+        merge: document.getElementById('optMerge').checked,
+        selectedTracks: exportSettings.selectedTracks
     };
 
-    console.log("Exporting...", options); // Debug per essere sicuri
+    //console log export
+    console.log("Exporting...", options);
 
-    // Chiudiamo la modale
+    // call download midi
+    downloadMIDI(options);
+
+    // close modal when export
     modalOverlay.classList.add('hidden');
 
-    // Chiamiamo la TUA funzione passandogli le opzioni
-    downloadMIDI(options);
+
 });
 
 // Init
@@ -1237,8 +1211,10 @@ initInterface();
 initVelocityPanel();
 initAdsrPanel();
 
+/* =================================================================
+   WELCOME MODAL 
+   ================================================================= */
 
-// WELCOME MODAL ON LOAD PAGE
 (function () {
     const welcomeModal = document.getElementById('welcomeModal');
     const welcomeCloseBtn = document.getElementById('welcomeCloseBtn');
