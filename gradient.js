@@ -105,7 +105,7 @@ class GradientBackground {
       uResolution: {
         value: new THREE.Vector2(window.innerWidth, window.innerHeight)
       },
-      // #aa3973 -> R:0.667, G:0.224, B:0.451
+      // #b62771ff -> R:0.667, G:0.224, B:0.451
       uColor1: { value: new THREE.Vector3(0.667, 0.224, 0.451) },
 
       // #1a7189 -> R:0.102, G:0.443, B:0.537
@@ -120,13 +120,13 @@ class GradientBackground {
       uSpeed: { value: 1.0 }, // animation speed
       uIntensity: { value: 1.8 }, //responsivity
       uTouchTexture: { value: null },
-      uGrainIntensity: { value: 0.08 }, //granularity
+      uGrainIntensity: { value: 0.001}, //granularity
       uZoom: { value: 1.0 }, // Zoom/scale control - lower = less zoomed (more visible)
-      uDarkNavy: { value: new THREE.Vector3(0.039, 0.055, 0.153) }, // #0a0e27 - Dark navy base color
+      uDarkNavy: { value: new THREE.Vector3(0.039, 0.055, 0.153) }, // #0022ffff - Dark navy base color
       uGradientSize: { value: 1.0 }, // Control gradient size (smaller = more gradients)
       uGradientCount: { value: 6.0 }, // Number of gradient centers
 
-      uColor1Weight: { value: 1.0 }, // Weight for color1 (magenta)
+      uColor1Weight: { value: 3.0}, // Weight for color1 (magenta)
       uColor2Weight: { value: 1.0 }, // Weight for color2 (ciano) 
       uColor3Weight: { value: 1.0 }, // Weight for color3 (green) 
       uColor3Weight: { value: 1.0 }, // Weight for color3 (orange) 
@@ -322,6 +322,7 @@ class GradientBackground {
               float luminance = dot(color, vec3(0.299, 0.587, 0.114));
               color = mix(vec3(luminance), color, 1.35);
               
+              color = max(color, vec3(0.0)); // make sure no negative channel enters de pow() !!!
               color = pow(color, vec3(0.92)); // Slight gamma adjustment for better contrast
               
               // Ensure minimum brightness (navy blue base instead of grey/black)
@@ -464,7 +465,7 @@ class App {
     this.colorSchemes = {
       1: {
         // Orange + Navy Blue
-        // #aa3973 -> R:0.667, G:0.224, B:0.451
+        // #d7197bff -> R:0.667, G:0.224, B:0.451
         color1: new THREE.Vector3(0.667, 0.224, 0.451),
 
         // #0d4c5eff -> R:0.102, G:0.443, B:0.537
