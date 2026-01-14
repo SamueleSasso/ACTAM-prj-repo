@@ -117,21 +117,20 @@ class GradientBackground {
       // #b06b16 -> R:0.690, G:0.420, B:0.086
       uColor4: { value: new THREE.Vector3(0.690, 0.420, 0.086) },
 
-      /*uColor5: { value: new THREE.Vector3(0.945, 0.353, 0.133) },*/
-      uColor5: { value: new THREE.Vector3(0.443, 0.616, 0.165) },
-
-      /*uColor6: { value: new THREE.Vector3(0.039, 0.055, 0.153) },*/
-      uColor6: { value: new THREE.Vector3(0.102, 0.443, 0.537) },
-      uSpeed: { value: 1.2 }, // Faster animation
-      uIntensity: { value: 1.8 },
+      uSpeed: { value: 1.0 }, // animation speed
+      uIntensity: { value: 1.8 }, //responsivity
       uTouchTexture: { value: null },
-      uGrainIntensity: { value: 0.08 },
+      uGrainIntensity: { value: 0.08 }, //granularity
       uZoom: { value: 1.0 }, // Zoom/scale control - lower = less zoomed (more visible)
       uDarkNavy: { value: new THREE.Vector3(0.039, 0.055, 0.153) }, // #0a0e27 - Dark navy base color
       uGradientSize: { value: 1.0 }, // Control gradient size (smaller = more gradients)
       uGradientCount: { value: 6.0 }, // Number of gradient centers
-      uColor1Weight: { value: 1.0 }, // Weight for color1 (orange) - reduce for more navy
-      uColor2Weight: { value: 1.0 } // Weight for color2 (navy) - increase for more navy
+
+      uColor1Weight: { value: 1.0 }, // Weight for color1 (magenta)
+      uColor2Weight: { value: 1.0 }, // Weight for color2 (ciano) 
+      uColor3Weight: { value: 1.0 }, // Weight for color3 (green) 
+      uColor3Weight: { value: 1.0 }, // Weight for color3 (orange) 
+
     };
   }
 
@@ -751,47 +750,6 @@ document.addEventListener(
   },
   { once: false }
 );
-
-// Cursor animation starts on first mouse move
-
-// Make cursor larger on hover over interactive elements
-const footerLink = document.querySelector(".footer a");
-footerLink.addEventListener("mouseenter", () => {
-  cursor.style.width = "50px";
-  cursor.style.height = "50px";
-  cursor.style.borderWidth = "3px";
-});
-footerLink.addEventListener("mouseleave", () => {
-  cursor.style.width = "40px";
-  cursor.style.height = "40px";
-  cursor.style.borderWidth = "2px";
-});
-
-// Make cursor larger on hover over color buttons
-colorButtons.forEach((btn) => {
-  btn.addEventListener("mouseenter", () => {
-    cursor.style.width = "50px";
-    cursor.style.height = "50px";
-    cursor.style.borderWidth = "3px";
-  });
-  btn.addEventListener("mouseleave", () => {
-    cursor.style.width = "40px";
-    cursor.style.height = "40px";
-    cursor.style.borderWidth = "2px";
-  });
-});
-
-// Make cursor larger on hover over toggle adjuster button
-toggleAdjusterBtn.addEventListener("mouseenter", () => {
-  cursor.style.width = "50px";
-  cursor.style.height = "50px";
-  cursor.style.borderWidth = "3px";
-});
-toggleAdjusterBtn.addEventListener("mouseleave", () => {
-  cursor.style.width = "40px";
-  cursor.style.height = "40px";
-  cursor.style.borderWidth = "2px";
-});
 
 // Optimized pulse effect - use requestAnimationFrame instead of setTimeout
 let lastMouseMoveTime = 0;

@@ -1019,13 +1019,16 @@ function downloadMIDI(options) {
         return;
     }
 
-
     const TICKS_PER_BAR = 512;
     const BARS_TO_EXPORT = 4;
     const currentBpm = parseInt(document.getElementById('bpm').value) || 120;
 
+    //tracks array
+    const midiTracks = [];
+
     // iteration for download for each selected track
     settings.selectedTracks.forEach((tIdx, index) => {
+
         const t = tracks[tIdx];
         if (!t) return;
 
@@ -1068,19 +1071,22 @@ function downloadMIDI(options) {
             }
         }
 
+        // add tracks to export array
+        midiTracks.push(track);
+    });
         // download file
         try {
             // define writer for every track
-            const writer = new MidiWriter.Writer([track]);
+            const writer = new MidiWriter.Writer(midiTracks);
             const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
 
-            // timeout for browser 
-            setTimeout(() => {
+
+
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
 
-                // name file
-                let filename = `Actam_Seq${tIdx + 1}_${t.sample}`;
+                // project name file
+                let filename = `Actam_Project`;
                 filename += settings.velocity ? "_vel.mid" : ".mid";
 
                 a.download = filename;
@@ -1093,12 +1099,13 @@ function downloadMIDI(options) {
                     URL.revokeObjectURL(a.href);
                 }, 100);
 
-            }, index * 250);
+            
 
         } catch (e) {
-            console.error(`Errore export traccia ${tIdx}:`, e);
+            console.error("Errore export MIDI:", e);
+            alert("Errore nella generazione del file MIDI.");
         }
-    });
+    
 }
 
 
@@ -1124,6 +1131,7 @@ if (globalResetBtn) {
 } else {
     console.error("ERRORE: Il tasto resetVelocityBtn non è stato trovato nell'HTML.");
 }
+
 /* =================================================================
    MODALS & BINDINGS 
    ================================================================= */
