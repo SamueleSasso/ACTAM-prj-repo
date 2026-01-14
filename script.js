@@ -246,6 +246,71 @@ const presets = {
             { steps: 13, pulses: 5, offset: 5, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.2, release: 0.05 } }
         ]
     },
+    tarantella: {
+        bpm: 155, // Veloce e terzinato
+        tracks: [
+            // Kick su battito 1 e 4 (simulazione 6/8 usando 12 steps)
+            { steps: 12, pulses: 2, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.1, sustain: 0.6, release: 0.1 } },
+            // Tamburello/Rim in controtempo terzinato
+            { steps: 12, pulses: 4, offset: 1, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.2, release: 0.05 } },
+            // HiHat continuo per dare il "treno"
+            { steps: 12, pulses: 12, offset: 0, sample: 'ClosedHat', adsr: { attack: 0.001, decay: 0.03, sustain: 0.1, release: 0.02 } },
+            // Accento sul Tom
+            { steps: 24, pulses: 2, offset: 6, sample: 'LowTom', adsr: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 0.2 } }
+        ]
+    },
+    reggae: {
+        bpm: 70, // One Drop lento
+        tracks: [
+            // One Drop: La cassa non suona sull'1, ma sul 3.
+            { steps: 16, pulses: 1, offset: 8, sample: 'Kick', adsr: { attack: 0.01, decay: 0.3, sustain: 0.7, release: 0.5 } },
+            // Rimshot secco in sync con la cassa o in levare
+            { steps: 16, pulses: 2, offset: 4, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.2, release: 0.05 } },
+            // Skank (chitarra/piano) simulato con HiHat o Tom sugli off-beat
+            { steps: 16, pulses: 8, offset: 2, sample: 'ClosedHat', adsr: { attack: 0.005, decay: 0.05, sustain: 0.1, release: 0.05 } },
+            // Fill di Tom rilassato
+            { steps: 12, pulses: 2, offset: 0, sample: 'MidTom', adsr: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.2 } }
+        ]
+    },
+    reggaeton: {
+        bpm: 96, // Classico Dem Bow
+        tracks: [
+            // Cassa dritta "Four on the floor"
+            { steps: 16, pulses: 4, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.2 } },
+            // Il classico ritmo Dem Bow (3-3-2 approx euclidea)
+            { steps: 16, pulses: 3, offset: 2, sample: 'Snare', adsr: { attack: 0.01, decay: 0.15, sustain: 0.5, release: 0.1 } },
+            // HiHat sincopato
+            { steps: 16, pulses: 6, offset: 1, sample: 'ClosedHat', adsr: { attack: 0.001, decay: 0.05, sustain: 0.1, release: 0.05 } },
+            // Percussioni aggiuntive
+            { steps: 32, pulses: 5, offset: 4, sample: 'LowTom', adsr: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 0.1 } }
+        ]
+    },
+    breakbeat: {
+        bpm: 134, // Funky break
+        tracks: [
+            // Kick sincopato (non sull'1, 2, 3, 4 precisi)
+            { steps: 16, pulses: 5, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.7, release: 0.2 } },
+            // Snare sul 2 e sul 4 (Backbeat solido)
+            { steps: 16, pulses: 2, offset: 4, sample: 'Snare', adsr: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.2 } },
+            // Ghost notes sui piatti
+            { steps: 16, pulses: 10, offset: 2, sample: 'ClosedHat', adsr: { attack: 0.001, decay: 0.03, sustain: 0.1, release: 0.03 } },
+            // Ride in poliritmia
+            { steps: 12, pulses: 4, offset: 0, sample: 'Ride', adsr: { attack: 0.05, decay: 0.3, sustain: 0.4, release: 0.5 } }
+        ]
+    },
+    drill: {
+        bpm: 142, // Dark e Half-time
+        tracks: [
+            // Kick molto rado e sincopato
+            { steps: 16, pulses: 3, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.3, sustain: 0.8, release: 0.4 } },
+            // Snare spostato (spesso sul beat 3 o in ritardo)
+            { steps: 16, pulses: 2, offset: 8, sample: 'Snare', adsr: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1 } },
+            // HiHats in terzine "skipping" (Drill signatures) - Usiamo 12 steps per le terzine
+            { steps: 12, pulses: 7, offset: 2, sample: 'ClosedHat', adsr: { attack: 0.001, decay: 0.04, sustain: 0.1, release: 0.02 } },
+            // Counter-snare o perc scura
+            { steps: 16, pulses: 2, offset: 11, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.2, release: 0.05 } }
+        ]
+    },
     custom: {
         bpm: 120,
         tracks: [
