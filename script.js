@@ -4,10 +4,10 @@
 const statusEl = document.getElementById('status');
 const startBtn = document.getElementById('startBtn');
 
-// Panner centrale
+//Central Panner
 const masterPanner = new Tone.Panner(0).toDestination();
 
-// Lista campioni
+//Samples List
 const samples = {
     Kick: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/Kick.wav",
     Snare: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/Snare.wav",
@@ -19,7 +19,7 @@ const samples = {
     RimShot: "https://raw.githubusercontent.com/dadymazz/ACTAM-2025-26-EUCLIDEAN-SEQUENCER/main/samples/RimShot.wav",
 };
 
-// Timeout di sicurezza
+//Security Timeout
 setTimeout(() => {
     if (!players.loaded) {
         statusEl.textContent = "Audio Loading Slow... (Press Start Anyway)";
@@ -38,7 +38,7 @@ const tracks = [
     { id: 3, colorVar: '--track-4', radius: 80, steps: 5, pulses: 2, offset: 0, sample: 'MidTom', pattern: [], playingIdx: -1, timer: null }
 ];
 tracks.forEach(track => {
-    track.velocity = new Array(track.steps).fill(100); // Inizializza velocity a 100 per ogni step
+    track.velocity = new Array(track.steps).fill(100); // Initialize the velocity to 100 for each step
 });
 
 
@@ -48,7 +48,7 @@ tracks.forEach(track => {
 });
 
 
-// Creiamo i player
+// Player creation
 const players = new Tone.Players(samples, {
     onload: () => {
         statusEl.textContent = "AUDIO READY";
@@ -399,19 +399,6 @@ function renderVelocityBars() {
     }
 }
 
-function initVelocityPanel() {
-
-    const velocityTrackSelect = document.getElementById('velocityTrackSelect');
-    
-    //Cambio traccia nel select
-    velocityTrackSelect.addEventListener('change', (e) => {
-        currentVelocityTrack = parseInt(e.target.value);
-        renderVelocityBars();
-    });
-
-    renderVelocityBars();
-}
-
 
 // ASDR section rendering
 const adsrDefaults = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 };
@@ -471,35 +458,35 @@ function triggerEnvelope(gain, time, velocity, adsr, gainValue) {
     const releaseStart = time + adsr.attack + adsr.decay + 0.05;
     gain.linearRampToValueAtTime(0, releaseStart + adsr.release);
 }
+
+
 /* =================================================================
-   LOGICA VELOCITY PAINTING (Minimal & Functional)
+   VELOCITY PAINTING LOGIC
    ================================================================= */
 
 let isDrawingVelocity = false;
 
-// Funzione di calcolo: trasforma la posizione X/Y del mouse in Step/Velocity
+// Transform X/Y mouse position in Step/Velocity
 function updateVelocityFromPointer(e) {
     const track = tracks[currentVelocityTrack];
     const rect = velocityBarsContainer.getBoundingClientRect();
 
-    // 1. Calcola quale step stiamo toccando (Asse X)
-    // Sottraiamo il padding sinistro se necessario, ma col calcolo relativo al width totale è più fluido
+    // calculate the step we're touching (X-axis)
     const relativeX = e.clientX - rect.left;
     const stepWidth = rect.width / track.steps;
 
     let stepIndex = Math.floor(relativeX / stepWidth);
 
-    // Sicurezza: restiamo nei limiti dell'array (0 -> steps-1)
+    // keeps into array's limits (0-127)
     stepIndex = Math.max(0, Math.min(stepIndex, track.steps - 1));
 
-    // 2. Calcola il valore di velocity (Asse Y)
-    // Nota: in basso è 0, in alto è 127. Mouse Y cresce scendendo.
+    // calculate velocity value (Y-axes)
     const relativeY = e.clientY - rect.top;
 
-    // Normalizziamo da 0 a 1 (1 = basso/0 vel, 0 = alto/127 vel)
+    // normalize on 0-1 value range
     let normalizedVal = 1 - (relativeY / rect.height);
 
-    // Clamping (non usciamo dai bordi verticali)
+    // clamping on vertical constraints (non usciamo dai bordi verticali)
     normalizedVal = Math.max(0, Math.min(normalizedVal, 1));
 
     const newVelocity = Math.round(normalizedVal * 127);
@@ -521,6 +508,7 @@ function updateVelocityFromPointer(e) {
         if (display) display.textContent = newVelocity;
     }
 }
+
 
 function initVelocityPanel() {
     const velocityTrackSelect = document.getElementById('velocityTrackSelect');
@@ -549,12 +537,11 @@ function initVelocityPanel() {
         }
     });
 
-    // Quando rilasciamo il click
+    // Drawing event end
     window.addEventListener('mouseup', () => {
         isDrawingVelocity = false;
     });
 
-    // Render iniziale
     renderVelocityBars();
 }
 
@@ -568,7 +555,7 @@ function initInterface() {
     tracks.forEach((track, index) => {
         const trackContainer = document.getElementById(`track-${index}`);
 
-        // Titolo colorato
+        // Colored title
         const header = document.createElement('div');
         header.className = 'track-title';
         header.textContent = trackTitles[index].label;
@@ -604,9 +591,16 @@ function initInterface() {
         trackContainer.appendChild(gainRow);
 
         // Gain knob (0 to 2, default 1, step 0.01)
-        new Knob(gainRow.lastChild, 'GAIN', 0, 2, 1, track.colorVar, (v) => {
+        // MODIFICA: Salviamo il riferimento in 'gainKnob'
+        const gainKnob = new Knob(gainRow.lastChild, 'GAIN', 0, 2, 1, track.colorVar, (v) => {
             track.gainNode.gain.value = v;
         }, 0.01);
+
+        // AGGIUNTA: Listener per il doppio click
+        gainKnob.knobEl.addEventListener('dblclick', () => {
+            gainKnob.setValue(1.00);
+        });
+
 
         // Sound select + file input
         const soundGroup = document.createElement('div');
@@ -673,6 +667,10 @@ function initInterface() {
                 renderVelocityBars();
             }
         });
+
+        
+
+
         track.stepsKnob = stepsK;
         track.pulsesKnob = pulsesK;
         track.offsetKnob = offsetK;

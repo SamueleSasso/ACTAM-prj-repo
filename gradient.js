@@ -466,16 +466,16 @@ class App {
     this.colorSchemes = {
       1: {
         // Orange + Navy Blue
-        // #aa3973 -> R:0.667, G:0.224, B:0.451
+        // #59444fff -> R:0.667, G:0.224, B:0.451
         color1: new THREE.Vector3(0.667, 0.224, 0.451), 
 
-        // #1a7189 -> R:0.102, G:0.443, B:0.537
+        // #0d4c5eff -> R:0.102, G:0.443, B:0.537
         color2: new THREE.Vector3(0.102, 0.443, 0.537),
 
-        // #719d2a -> R:0.443, G:0.616, B:0.165
+        // #26871aff -> R:0.443, G:0.616, B:0.165
         color3: new THREE.Vector3(0.443, 0.616, 0.165), 
 
-        // #b06b16 -> R:0.690, G:0.420, B:0.086
+        // #9d6812ff -> R:0.690, G:0.420, B:0.086
         color4: new THREE.Vector3(0.690, 0.420, 0.086), 
       },
       
@@ -492,7 +492,7 @@ class App {
     const uniforms = this.gradientBackground.uniforms;
 
     // Update background color and base color
-    if (scheme === 1) {
+
       this.scene.background = new THREE.Color(0x0a0e27); // Navy blue for scheme 1
       uniforms.uDarkNavy.value.set(0.039, 0.055, 0.153); // #0a0e27 - Navy blue base color
       // More gradient action: smaller gradients, more of them
@@ -502,70 +502,8 @@ class App {
       // Balance colors: reduce orange, increase navy
       uniforms.uColor1Weight.value = 0.5; // Reduce orange intensity
       uniforms.uColor2Weight.value = 1.8; // Increase navy intensity
-    } else if (scheme === 6) {
-      // Scheme 6: Identical to scheme 1 but with Orange, Navy, and Turquoise
-      this.scene.background = new THREE.Color(0x0a0e27); // Navy blue (same as scheme 1)
-      uniforms.uDarkNavy.value.set(0.039, 0.055, 0.153); // #0a0e27 - Navy blue base color (same as scheme 1)
-      // More gradient action: smaller gradients, more of them (same as scheme 1)
-      uniforms.uGradientSize.value = 0.45; // Smaller gradient radius for more defined gradients
-      uniforms.uGradientCount.value = 12.0; // More gradient centers (12 instead of 6)
-      uniforms.uSpeed.value = 1.5; // Slightly faster for more movement
-      // Balance colors: reduce orange, increase navy (same as scheme 1)
-      uniforms.uColor1Weight.value = 0.5; // Reduce orange intensity
-      uniforms.uColor2Weight.value = 1.8; // Increase navy intensity
-    } else if (scheme === 7) {
-      // Scheme 7: Based on Scheme 6 with F26633, 2D6B6D, D1AF9C (same settings as Scheme 6)
-      this.scene.background = new THREE.Color(0x0a0e27); // Navy blue (same as scheme 6)
-      uniforms.uDarkNavy.value.set(0.039, 0.055, 0.153); // #0a0e27 - Navy blue base color (same as scheme 6)
-      // More gradient action: smaller gradients, more of them (same as scheme 6)
-      uniforms.uGradientSize.value = 0.45; // Smaller gradient radius for more defined gradients
-      uniforms.uGradientCount.value = 12.0; // More gradient centers (12 instead of 6)
-      uniforms.uSpeed.value = 1.5; // Slightly faster for more movement
-      // Balance colors: same as scheme 6
-      uniforms.uColor1Weight.value = 0.5; // Reduce orange/coral intensity
-      uniforms.uColor2Weight.value = 1.8; // Increase teal intensity
-    } else if (scheme === 8) {
-      // Scheme 8: Identical to Scheme 1
-      this.scene.background = new THREE.Color(0x0a0e27); // Navy blue for scheme 8
-      uniforms.uDarkNavy.value.set(0.039, 0.055, 0.153); // #0a0e27 - Navy blue base color
-      // More gradient action: smaller gradients, more of them
-      uniforms.uGradientSize.value = 0.45; // Smaller gradient radius for more defined gradients
-      uniforms.uGradientCount.value = 12.0; // More gradient centers (12 instead of 6)
-      uniforms.uSpeed.value = 1.5; // Slightly faster for more movement
-      // Balance colors: reduce orange, increase navy
-      uniforms.uColor1Weight.value = 0.5; // Reduce orange intensity
-      uniforms.uColor2Weight.value = 1.8; // Increase navy intensity
-    } else if (scheme === 5) {
-      // Scheme 5: Same settings as Scheme 1 but with F15A22 + 004238 + F15A22 + 000000 + F15A22 + 000000
-      this.scene.background = new THREE.Color(0x0a0e27); // Navy blue for scheme 5 (same as scheme 1)
-      uniforms.uDarkNavy.value.set(0.039, 0.055, 0.153); // #0a0e27 - Navy blue base color (same as scheme 1)
-      // More gradient action: smaller gradients, more of them (same as scheme 1)
-      uniforms.uGradientSize.value = 0.45; // Smaller gradient radius for more defined gradients
-      uniforms.uGradientCount.value = 12.0; // More gradient centers (12 instead of 6)
-      uniforms.uSpeed.value = 1.5; // Slightly faster for more movement
-      // Balance colors: reduce orange, increase navy (same as scheme 1)
-      uniforms.uColor1Weight.value = 0.5; // Reduce orange intensity
-      uniforms.uColor2Weight.value = 1.8; // Increase navy intensity
-    } else if (scheme === 4) {
-      this.scene.background = new THREE.Color(0xffffff); // Off-white for scheme 4
-      uniforms.uDarkNavy.value.set(0, 0, 0); // #FAFAFA - Off-white base
-    } else if (scheme === 2) {
-      this.scene.background = new THREE.Color(0x0a0e27); // Default dark navy for scheme 2
-      uniforms.uDarkNavy.value.set(0.039, 0.055, 0.153); // #0a0e27 - Default dark navy
-      uniforms.uGradientSize.value = 1.0; // Default size
-      uniforms.uGradientCount.value = 6.0; // Default count
-      uniforms.uSpeed.value = 1.2; // Default speed
-      uniforms.uColor1Weight.value = 1.0; // Default weight
-      uniforms.uColor2Weight.value = 1.0; // Default weight
-    } else {
-      this.scene.background = new THREE.Color(0x0a0e27); // Default dark navy
-      uniforms.uDarkNavy.value.set(0.039, 0.055, 0.153); // #0a0e27 - Default dark navy
-      uniforms.uGradientSize.value = 1.0; // Default size
-      uniforms.uGradientCount.value = 6.0; // Default count
-      uniforms.uSpeed.value = 1.2; // Default speed
-      uniforms.uColor1Weight.value = 1.0; // Default weight
-      uniforms.uColor2Weight.value = 1.0; // Default weight
-    }
+
+
   }
 
   init() {
@@ -783,37 +721,7 @@ document.querySelectorAll(".copy-btn").forEach((btn) => {
   });
 });
 
-// Export all colors
-const exportAllBtn = document.getElementById("exportAllBtn");
-exportAllBtn.addEventListener("click", () => {
-  const colors = [];
-  for (let i = 1; i <= 6; i++) {
-    const display = document.getElementById(`colorValue${i}`);
-    colors.push(display.value);
-  }
 
-  const exportText = `Color Scheme:\n${colors
-    .map((c, i) => `Color ${i + 1}: ${c}`)
-    .join("\n")}\n\nHex Array: [${colors.map((c) => `"${c}"`).join(", ")}]`;
-
-  navigator.clipboard.writeText(exportText).then(() => {
-    exportAllBtn.textContent = "Copied!";
-    exportAllBtn.style.background = "rgba(76, 175, 80, 0.3)";
-    exportAllBtn.style.borderColor = "rgba(76, 175, 80, 0.5)";
-    setTimeout(() => {
-      exportAllBtn.textContent = "Export All Colors";
-      exportAllBtn.style.background = "";
-      exportAllBtn.style.borderColor = "";
-    }, 2000);
-  });
-});
-
-// Custom cursor
-const cursor = document.getElementById("customCursor");
-let mouseX = 0;
-let mouseY = 0;
-let cursorX = 0;
-let cursorY = 0;
 
 document.addEventListener("mousemove", (e) => {
   mouseX = e.clientX;
