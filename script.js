@@ -1001,65 +1001,60 @@ document.addEventListener('keydown', (e) => {
 const exportBtn = document.getElementById('exportBtn');
 
 function downloadMIDI(options) {
+    //check if library is loaded
     if (typeof MidiWriter === 'undefined') {
         alert("Errore critico: Libreria MidiWriter non caricata.");
         return;
     }
 
-    // Setup option
+    // options setup
     const settings = {
         velocity: (options && options.velocity !== undefined) ? options.velocity : true,
         selectedTracks: (options && options.selectedTracks) ? options.selectedTracks : [0, 1, 2, 3]
     };
 
+    // alert no selection
     if (settings.selectedTracks.length === 0) {
         alert("Nessuna traccia selezionata.");
         return;
     }
 
-    // STANDARD tick config
-    const PPQ = 128;
+
     const TICKS_PER_BAR = 512;
     const BARS_TO_EXPORT = 4;
-
-    // get BPM from input
     const currentBpm = parseInt(document.getElementById('bpm').value) || 120;
-    const separateTracks = [];
 
-    settings.selectedTracks.forEach(tIdx => {
+    // iteration for download for each selected track
+    settings.selectedTracks.forEach((tIdx, index) => {
         const t = tracks[tIdx];
         if (!t) return;
 
-        // prepare track
+        // creation midi track
         const track = new MidiWriter.Track();
-        track.addTrackName(`Track ${tIdx + 1} - ${t.sample.toUpperCase()}`);
+        track.addTrackName(`Seq ${tIdx + 1} - ${t.sample.toUpperCase()}`);
         track.setTempo(currentBpm);
         track.setTimeSignature(4, 4);
 
-        // set note to export
-        const noteNumber = 37;
+        //fix note as C3
+        const noteNumber = 60;
 
         const totalStepsToExport = t.steps * BARS_TO_EXPORT;
-
         let waitBuffer = 0;
 
+        // midi creation 
         for (let i = 0; i < totalStepsToExport; i++) {
             const patternIdx = i % t.steps;
             const isActive = t.pattern[patternIdx] === 1;
 
-            // math to export
             const absStartBar = i / t.steps;
             const absEndBar = (i + 1) / t.steps;
-
             const tickStart = Math.round(absStartBar * TICKS_PER_BAR);
             const tickEnd = Math.round(absEndBar * TICKS_PER_BAR);
-
             const currentStepDuration = tickEnd - tickStart;
 
             if (isActive) {
                 const finalVelocity = settings.velocity ? (t.velocity[patternIdx] || 100) : 100;
 
-                // SCRITTURA EVENTO
                 track.addEvent(new MidiWriter.NoteEvent({
                     pitch: [noteNumber],
                     duration: 'T' + currentStepDuration,
@@ -1067,43 +1062,44 @@ function downloadMIDI(options) {
                     channel: 10,
                     velocity: finalVelocity
                 }));
-
-                // Reset buffer dopo aver scritto la nota
                 waitBuffer = 0;
-
             } else {
-                // silence
                 waitBuffer += currentStepDuration;
             }
         }
-        separateTracks.push(track);
+
+        // download file
+        try {
+            // define writer for every track
+            const writer = new MidiWriter.Writer([track]);
+            const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
+
+            // timeout for browser 
+            setTimeout(() => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+
+                // name file
+                let filename = `Actam_Seq${tIdx + 1}_${t.sample}`;
+                filename += settings.velocity ? "_vel.mid" : ".mid";
+
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+
+                // Cleanup variables
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(a.href);
+                }, 100);
+
+            }, index * 250);
+
+        } catch (e) {
+            console.error(`Errore export traccia ${tIdx}:`, e);
+        }
     });
-
-    // SELECT OUTPUT
-    const finalTracks = separateTracks;
-
-    // DOWNLOAD
-    try {
-        const writer = new MidiWriter.Writer(finalTracks);
-        const blob = new Blob([writer.buildFile()], { type: "audio/midi" });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-
-        let filename = "actam_poly";
-        filename += settings.velocity ? "_vel-ON.mid" : "_vel-OFF.mid";
-
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-
-        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
-
-    } catch (e) {
-        console.error("Errore scrittura MIDI:", e);
-        alert("Errore generazione MIDI.");
-    }
 }
-
 
 
 /* =================================================================
