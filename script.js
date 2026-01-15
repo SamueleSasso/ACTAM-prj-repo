@@ -229,21 +229,21 @@ const presets = {
     },
     jungle: {
 
-        bpm: 160,
+        bpm: 150,
         tracks: [
             { steps: 32, pulses: 7, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.2 } },
             { steps: 16, pulses: 2, offset: 4, sample: 'Snare', adsr: { attack: 0.01, decay: 0.1, sustain: 0.4, release: 0.5 } },
-            { steps: 16, pulses: 12, offset: 0, sample: 'ClosedHat', adsr: { attack: 0.005, decay: 0.05, sustain: 0.1, release: 0.05 } },
-            { steps: 32, pulses: 4, offset: 4, sample: 'OpenHat', adsr: { attack: 0.01, decay: 0.1, sustain: 0.4, release: 0.3 } }
+            { steps: 16, pulses: 8, offset: 0, sample: 'ClosedHat', adsr: { attack: 0.005, decay: 0.05, sustain: 0.1, release: 0.05 } },
+            { steps: 32, pulses: 4, offset: 4, sample: 'OpenHat', adsr: { attack: 0.01, decay: 0.1, sustain: 0.04, release: 0.3 } }
         ]
     },
     poly_groove: {
 
-        bpm: 112,
+        bpm: 60,
         tracks: [
-            { steps: 5, pulses: 2, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2 } },
-            { steps: 7, pulses: 3, offset: 1, sample: 'LowTom', adsr: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.3 } },
-            { steps: 11, pulses: 4, offset: 3, sample: 'MidTom', adsr: { attack: 0.01, decay: 0.15, sustain: 0.5, release: 0.2 } },
+            { steps: 32, pulses: 10, offset: 3, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2 } },
+            { steps: 16, pulses: 6, offset: 1, sample: 'LowTom', adsr: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.3 } },
+            { steps: 27, pulses: 4, offset: 3, sample: 'MidTom', adsr: { attack: 0.01, decay: 0.15, sustain: 0.5, release: 0.2 } },
             { steps: 13, pulses: 5, offset: 5, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.2, release: 0.05 } }
         ]
     },
@@ -265,15 +265,6 @@ const presets = {
             { steps: 12, pulses: 2, offset: 0, sample: 'MidTom', adsr: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.2 } }
         ]
     },
-    reggaeton: {
-        bpm: 96,
-        tracks: [
-            { steps: 16, pulses: 4, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.2 } },
-            { steps: 16, pulses: 3, offset: 2, sample: 'Snare', adsr: { attack: 0.01, decay: 0.15, sustain: 0.5, release: 0.1 } },
-            { steps: 16, pulses: 5, offset: 1, sample: 'ClosedHat', adsr: { attack: 0.001, decay: 0.05, sustain: 0.1, release: 0.05 } },
-            { steps: 32, pulses: 2, offset: 4, sample: 'LowTom', adsr: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 0.1 } }
-        ]
-    },
     breakbeat: {
         bpm: 134,
         tracks: [
@@ -281,15 +272,6 @@ const presets = {
             { steps: 16, pulses: 2, offset: 4, sample: 'Snare', adsr: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.2 } },
             { steps: 16, pulses: 9, offset: 2, sample: 'ClosedHat', adsr: { attack: 0.001, decay: 0.03, sustain: 0.1, release: 0.03 } },
             { steps: 12, pulses: 4, offset: 0, sample: 'Ride', adsr: { attack: 0.05, decay: 0.3, sustain: 0.4, release: 0.5 } }
-        ]
-    },
-    drill: {
-        bpm: 142,
-        tracks: [
-            { steps: 16, pulses: 3, offset: 0, sample: 'Kick', adsr: { attack: 0.01, decay: 0.3, sustain: 0.8, release: 0.4 } },
-            { steps: 16, pulses: 2, offset: 8, sample: 'Snare', adsr: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1 } },
-            { steps: 12, pulses: 7, offset: 2, sample: 'ClosedHat', adsr: { attack: 0.001, decay: 0.04, sustain: 0.1, release: 0.02 } },
-            { steps: 16, pulses: 2, offset: 11, sample: 'RimShot', adsr: { attack: 0.001, decay: 0.05, sustain: 0.2, release: 0.05 } }
         ]
     },
     custom: {
